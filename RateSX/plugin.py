@@ -64,7 +64,12 @@ class RateSX(callbacks.Plugin):
         currency = currency.upper()
         target = target.upper()
 
-        response = get(f'https://{target}.rate.sx/{count}{currency}').text.strip()
+        response = str(get(f'https://{target}.rate.sx/{count}{currency}').text)
+        response = response.strip()
+        response = response.strip('\'')
+        if 'ERROR:' in response:
+            irc.reply(response)
+            return
         irc.reply(f'{count} {currency} = {response} {target}')
 
 
