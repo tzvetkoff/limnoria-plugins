@@ -33,8 +33,6 @@ try:
     from supybot.i18n import PluginInternationalization
     _ = PluginInternationalization('RateSX')
 except ImportError:
-    # Placeholder that allows to run the plugin on a bot
-    # without the i18n module
     def _(x):
         return x
 
@@ -77,6 +75,5 @@ class RateSX(callbacks.Plugin):
 
 
 Class = RateSX
-
 
 # vim:ft=py:ts=4:sts=4:sw=4:et:tw=119

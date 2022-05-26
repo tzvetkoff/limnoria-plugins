@@ -59,5 +59,4 @@ if world.testing:
 Class = plugin.Class
 configure = config.configure
 
-
 # vim:ft=py:ts=4:sts=4:sw=4:et:tw=119

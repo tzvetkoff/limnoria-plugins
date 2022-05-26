@@ -27,30 +27,35 @@
 # POSSIBILITY OF SUCH DAMAGE.
 ###
 
+"""
+Atheme: Atheme services integration
+"""
 
-from supybot import conf
-import supybot.registry as registry
-try:
-    from supybot.i18n import PluginInternationalization
-    _ = PluginInternationalization('RateSX')
-except Exception:
-    def _(x):
-        return x
+import sys
+import supybot
+from supybot import world
 
+__version__ = "2022.05.24"
+__author__ = supybot.Author('Latchezar Tzvetkoff', 'Polizei', 'latchezar@tzvetkoff.net')
+__contributors__ = {}
+__url__ = 'https://github.com/tzvetkoff/limnoria-plugins'
 
-def configure(advanced):
-    from supybot.questions import output
-    conf.registerPlugin('RateSX', True)
-    if advanced:
-        output('The RateSX plugin adds a command to fetch crypto prices from https://rate.sx/')
+from . import config
+from . import plugin
+if sys.version_info >= (3, 4):
+    from importlib import reload
+else:
+    from imp import reload
+# In case we're being reloaded.
+reload(config)
+reload(plugin)
+# Add more reloads here if you add third-party modules and want them to be
+# reloaded when this plugin is reloaded.  Don't forget to import them as well!
 
+if world.testing:
+    from . import test  # noqa
 
-RateSX = conf.registerPlugin('RateSX')
-
-conf.registerChannelValue(
-    RateSX,
-    'enable',
-    registry.Boolean(False, _('Should rate.sx command be enabled in this channel?')),
-)
+Class = plugin.Class
+configure = config.configure
 
 # vim:ft=py:ts=4:sts=4:sw=4:et:tw=119

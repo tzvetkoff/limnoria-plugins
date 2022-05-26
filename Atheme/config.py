@@ -32,7 +32,7 @@ from supybot import conf
 import supybot.registry as registry
 try:
     from supybot.i18n import PluginInternationalization
-    _ = PluginInternationalization('RateSX')
+    _ = PluginInternationalization('Atheme')
 except Exception:
     def _(x):
         return x
@@ -40,17 +40,17 @@ except Exception:
 
 def configure(advanced):
     from supybot.questions import output
-    conf.registerPlugin('RateSX', True)
+    conf.registerPlugin('Atheme', True)
     if advanced:
-        output('The RateSX plugin adds a command to fetch crypto prices from https://rate.sx/')
+        output('The Atheme plugin adds integration with Atheme services.')
 
 
-RateSX = conf.registerPlugin('RateSX')
+Atheme = conf.registerPlugin('Atheme')
 
 conf.registerChannelValue(
-    RateSX,
+    Atheme,
     'enable',
-    registry.Boolean(False, _('Should rate.sx command be enabled in this channel?')),
+    registry.Boolean(False, _('Should Atheme services be enabled in this channel?')),
 )
 
 # vim:ft=py:ts=4:sts=4:sw=4:et:tw=119
