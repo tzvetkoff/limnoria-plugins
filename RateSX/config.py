@@ -29,6 +29,7 @@
 
 
 from supybot import conf
+import supybot.registry as registry
 try:
     from supybot.i18n import PluginInternationalization
     _ = PluginInternationalization('RateSX')
@@ -38,10 +39,19 @@ except Exception:
 
 
 def configure(advanced):
+    from supybot.questions import output
     conf.registerPlugin('RateSX', True)
+    if advanced:
+        output('The RateSX plugin adds a command to fetch crypto prices from https://rate.sx/')
 
 
 RateSX = conf.registerPlugin('RateSX')
+
+conf.registerChannelValue(
+    RateSX,
+    'enable',
+    registry.Boolean(False, _('Should rate.sx command be enabled in this channel?')),
+)
 
 
 # vim:ft=py:ts=4:sts=4:sw=4:et:tw=119

@@ -34,6 +34,7 @@ from supybot.test import *
 
 class RateSXTestCase(PluginTestCase):
     plugins = ('RateSX',)
+    config = {'plugins.ratesx.enable': True}
 
     @unittest.skipUnless(network, 'rate.sx tests require networking')
     def testRate(self):
