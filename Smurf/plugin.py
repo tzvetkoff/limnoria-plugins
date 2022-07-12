@@ -112,22 +112,26 @@ class Smurf(callbacks.Plugin):
         pass
 
     def getTitle(self, irc, msg, url):
-        # Stolen from plugins/Web/plugin.py
+        # Some things stolen from:
+        #   https://github.com/progval/Limnoria/blob/master/plugins/Web/plugin.py
+        #   https://github.com/impredicative/urltitle/blob/master/urltitle/config/overrides.py
         max_size = conf.supybot.protocols.http.peekSize()
         timeout = self.registryValue('timeout')
         headers = conf.defaultHttpHeaders(irc.network, msg.channel)
 
         parsed_url = utils.web.urlparse(url)
         if parsed_url.netloc in ('youtube.com') or parsed_url.netloc.endswith(('.youtube.com')):
-            max_size = 524288
+            max_size = max(max_size, 524288)
         elif parsed_url.netloc in ('reddit.com', 'www.reddit.com', 'new.reddit.com'):
             parsed_url = parsed_url._replace(netloc='old.reddit.com')
             url = urlunparse(parsed_url)
         elif parsed_url.netloc in ('mobile.twitter.com', 'twitter.com'):
-            max_size = 65536
+            max_size = max(max_size, 65536)
             parsed_url = parsed_url._replace(netloc='twitter.com')
             url = urlunparse(parsed_url)
             headers['User-agent'] = 'Googlebot-News'
+        elif parsed_url.netloc in ('github.com'):
+            max_size = max(max_size, 65536)
 
         try:
             if parsed_url.netloc == 'twitter.com':
