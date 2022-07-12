@@ -32,15 +32,26 @@
 from supybot.test import *
 
 
-class RateSXTestCase(PluginTestCase):
-    plugins = ('RateSX',)
-    config = {'plugins.ratesx.enable': True}
+class SmurfTestCase(PluginTestCase):
+    plugins = ('Smurf',)
+    config = {'plugins.smurf.enable': True,
+              'plugins.smurf.reportErrors': True,
+              'plugins.smurf.smurfMultipleURLs': True,
+              # 'plugins.smurf.ignoreUrlRegexp': r'porn',
+              'plugins.smurf.timeout': 5}
+    timeout = 10
 
-    @unittest.skipUnless(network, 'rate.sx tests require networking')
-    def testRate(self):
-        self.assertRegexp('rate BTC', r'1 BTC = .* USD')
-        self.assertRegexp('rate 2 BTC', r'2 BTC = .* USD')
-        self.assertRegexp('rate 3 BTC in EUR', r'3 BTC = .* EUR')
-        self.assertRegexp('rate 4 ZZZ in DOGE', r'ERROR:.*')
+    @unittest.skipUnless(network, 'smurf tests require networking')
+    def testSmurf(self):
+        ignoreUrlRegexpVar = conf.supybot.plugins.smurf.ignoreUrlRegexp
+
+        try:
+            ignoreUrlRegexpVar.set(r'/porn/')
+
+            # self.assertRegexp('smurf https://pfoo.org/', r'pfoo!')
+            self.assertRegexp('smurf https://twitter.com/umnogledasht/status/1475499649813422088', r'задника')
+        finally:
+            ignoreUrlRegexpVar.set(None)
+
 
 # vim:ft=py:ts=4:sts=4:sw=4:et:tw=119

@@ -1,5 +1,5 @@
 ###
-# Copyright (c) 2022, Latchezar Tzvetkoff
+# Copyright (c) 2022 Latchezar Tzvetkoff
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without

@@ -27,20 +27,35 @@
 # POSSIBILITY OF SUCH DAMAGE.
 ###
 
-# pylama:ignore=W0401
+"""
+Smurf: Fetches URL titles
+"""
 
-from supybot.test import *
+import sys
+import supybot
+from supybot import world
 
+__version__ = '2022.07.12'
+__author__ = supybot.Author('Latchezar Tzvetkoff', 'Polizei', 'latchezar@tzvetkoff.net')
+__contributors__ = {}
+__url__ = 'https://github.com/tzvetkoff/limnoria-plugins'
 
-class RateSXTestCase(PluginTestCase):
-    plugins = ('RateSX',)
-    config = {'plugins.ratesx.enable': True}
+from . import config
+from . import plugin
+if sys.version_info >= (3, 4):
+    from importlib import reload
+else:
+    from imp import reload
+# In case we're being reloaded.
+reload(config)
+reload(plugin)
+# Add more reloads here if you add third-party modules and want them to be
+# reloaded when this plugin is reloaded.  Don't forget to import them as well!
 
-    @unittest.skipUnless(network, 'rate.sx tests require networking')
-    def testRate(self):
-        self.assertRegexp('rate BTC', r'1 BTC = .* USD')
-        self.assertRegexp('rate 2 BTC', r'2 BTC = .* USD')
-        self.assertRegexp('rate 3 BTC in EUR', r'3 BTC = .* EUR')
-        self.assertRegexp('rate 4 ZZZ in DOGE', r'ERROR:.*')
+if world.testing:
+    from . import test  # noqa
+
+Class = plugin.Class
+configure = config.configure
 
 # vim:ft=py:ts=4:sts=4:sw=4:et:tw=119

@@ -27,20 +27,8 @@
 # POSSIBILITY OF SUCH DAMAGE.
 ###
 
-# pylama:ignore=W0401
+from supybot.setup import plugin_setup
 
-from supybot.test import *
-
-
-class RateSXTestCase(PluginTestCase):
-    plugins = ('RateSX',)
-    config = {'plugins.ratesx.enable': True}
-
-    @unittest.skipUnless(network, 'rate.sx tests require networking')
-    def testRate(self):
-        self.assertRegexp('rate BTC', r'1 BTC = .* USD')
-        self.assertRegexp('rate 2 BTC', r'2 BTC = .* USD')
-        self.assertRegexp('rate 3 BTC in EUR', r'3 BTC = .* EUR')
-        self.assertRegexp('rate 4 ZZZ in DOGE', r'ERROR:.*')
-
-# vim:ft=py:ts=4:sts=4:sw=4:et:tw=119
+plugin_setup(
+    'Smurf',
+)
