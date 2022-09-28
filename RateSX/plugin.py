@@ -40,7 +40,7 @@ from requests import get
 
 
 class RateSX(callbacks.Plugin):
-    """Fetches crypto currency prices from rate.sx"""
+    '''Fetches crypto currency prices from rate.sx'''
     threaded = True
 
     @wrap([
@@ -50,10 +50,10 @@ class RateSX(callbacks.Plugin):
         optional('somethingWithoutSpaces'),
     ])
     def rate(self, irc, msg, args, count, currency, _, target):
-        """[count] <currency> [to [target currency]]
+        '''[count] <currency> [to [target currency]]
 
         Fetches crypto currency's price from https://rate.sx/
-        """
+        '''
         if not self.registryValue('enable', msg.channel, irc.network):
             return
 
@@ -76,4 +76,4 @@ class RateSX(callbacks.Plugin):
 
 Class = RateSX
 
-# vim:ft=py:ts=4:sts=4:sw=4:et:tw=119
+# vim:ft=python:ts=4:sts=4:sw=4:et:tw=119

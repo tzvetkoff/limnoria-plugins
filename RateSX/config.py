@@ -53,4 +53,4 @@ conf.registerChannelValue(
     registry.Boolean(False, _('Should rate.sx command be enabled in this channel?')),
 )
 
-# vim:ft=py:ts=4:sts=4:sw=4:et:tw=119
+# vim:ft=python:ts=4:sts=4:sw=4:et:tw=119

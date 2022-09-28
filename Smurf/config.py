@@ -72,4 +72,4 @@ conf.registerChannelValue(
     registry.Integer(5, _('Fetch timeout')),
 )
 
-# vim:ft=py:ts=4:sts=4:sw=4:et:tw=119
+# vim:ft=python:ts=4:sts=4:sw=4:et:tw=119

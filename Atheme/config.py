@@ -53,4 +53,4 @@ conf.registerChannelValue(
     registry.Boolean(False, _('Should Atheme services be enabled in this channel?')),
 )
 
-# vim:ft=py:ts=4:sts=4:sw=4:et:tw=119
+# vim:ft=python:ts=4:sts=4:sw=4:et:tw=119

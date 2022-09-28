@@ -132,6 +132,8 @@ class Smurf(callbacks.Plugin):
             headers['User-agent'] = 'Googlebot-News'
         elif parsed_url.netloc in ('github.com'):
             max_size = max(max_size, 65536)
+        elif parsed_url.netloc in ('c0re.pfoo.org'):
+            headers['User-agent'] = 'Googlebot-News'
 
         try:
             if parsed_url.netloc == 'twitter.com':
@@ -218,5 +220,4 @@ class SmurfException(Exception):
 
 Class = Smurf
 
-
-# vim:ft=py:ts=4:sts=4:sw=4:et:tw=119
+# vim:ft=python:ts=4:sts=4:sw=4:et:tw=119

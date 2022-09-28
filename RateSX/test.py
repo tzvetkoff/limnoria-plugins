@@ -43,4 +43,4 @@ class RateSXTestCase(PluginTestCase):
         self.assertRegexp('rate 3 BTC in EUR', r'3 BTC = .* EUR')
         self.assertRegexp('rate 4 ZZZ in DOGE', r'ERROR:.*')
 
-# vim:ft=py:ts=4:sts=4:sw=4:et:tw=119
+# vim:ft=python:ts=4:sts=4:sw=4:et:tw=119

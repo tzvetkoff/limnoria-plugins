@@ -32,3 +32,5 @@ from supybot.setup import plugin_setup
 plugin_setup(
     'Smurf',
 )
+
+# vim:ft=python:ts=4:sts=4:sw=4:et:tw=119
