@@ -111,6 +111,25 @@ class Smurf(callbacks.Plugin):
 
         pass
 
+    def getEncoding(self, text):
+        try:
+            match = re.search(utils.web._charset_re, text, re.MULTILINE)
+            if match:
+                return match.group('charset')[1:-1]
+        except:
+            match = re.search(utils.web._charset_re.encode(), text, re.MULTILINE)
+            if match:
+                return match.group('charset').decode()[1:-1]
+
+        try:
+            import chardet.universaldetector
+            u = chardet.universaldetector.UniversalDetector()
+            u.feed(text)
+            u.close()
+            return u.result['encoding']
+        except:
+            return None
+
     def getTitle(self, irc, msg, url):
         # Some things stolen from:
         #   https://github.com/progval/Limnoria/blob/master/plugins/Web/plugin.py
@@ -156,7 +175,7 @@ class Smurf(callbacks.Plugin):
                         raise SmurfException(parsed_url.netloc, 'Timeout')
 
                 try:
-                    text = text.decode(utils.web.getEncoding(text) or 'utf8', 'replace')
+                    text = text.decode(self.getEncoding(text) or 'utf8', 'replace')
                 except UnicodeDecodeError:
                     self.log.error('Smurf: URL <%s> - Cannot guess encoding')
                     raise SmurfException(parsed_url.netloc, 'Cannot guess encoding')

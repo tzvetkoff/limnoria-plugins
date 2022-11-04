@@ -47,9 +47,7 @@ class SmurfTestCase(PluginTestCase):
 
         try:
             ignoreUrlRegexpVar.set(r'/porn/')
-
-            # self.assertRegexp('smurf https://pfoo.org/', r'pfoo!')
-            self.assertRegexp('smurf https://twitter.com/umnogledasht/status/1475499649813422088', r'задника')
+            self.assertRegexp('smurf http://pfoo.org/', r'pfoo!')
         finally:
             ignoreUrlRegexpVar.set(None)
 
