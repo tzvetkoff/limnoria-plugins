@@ -122,11 +122,9 @@ class Smurf(callbacks.Plugin):
                 return match.group('charset').decode()[1:-1]
 
         try:
-            import chardet.universaldetector
-            u = chardet.universaldetector.UniversalDetector()
-            u.feed(text)
-            u.close()
-            return u.result['encoding']
+            import charset_normalizer
+            result = charset_normalizer.detect(text)
+            return result['encoding']
         except:
             return None
 
@@ -139,7 +137,7 @@ class Smurf(callbacks.Plugin):
         headers = conf.defaultHttpHeaders(irc.network, msg.channel)
 
         parsed_url = utils.web.urlparse(url)
-        if parsed_url.netloc in ('youtube.com') or parsed_url.netloc.endswith(('.youtube.com')):
+        if parsed_url.netloc in ('youtube.com', 'youtu.be') or parsed_url.netloc.endswith(('.youtube.com')):
             max_size = max(max_size, 524288)
         elif parsed_url.netloc in ('reddit.com', 'www.reddit.com', 'new.reddit.com'):
             parsed_url = parsed_url._replace(netloc='old.reddit.com')
