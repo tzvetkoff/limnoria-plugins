@@ -64,12 +64,12 @@ class Cayman(callbacks.Plugin):
         pattern = re.compile(r'\b(' + '|'.join(words) + r')\b', re.IGNORECASE)
         return not not pattern.search(message)
 
-    @wrap([])
+    @wrap
     def catgif(self, irc, msg, args):
         '''Gets a random cat gif'''
         irc.reply(self._gif())
 
-    @wrap([])
+    @wrap
     def catfact(self, irc, msg, args):
         '''Gets a random cat fact'''
         irc.reply(self._fact())

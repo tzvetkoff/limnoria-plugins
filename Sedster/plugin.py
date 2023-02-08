@@ -27,26 +27,16 @@
 # POSSIBILITY OF SUCH DAMAGE.
 ###
 
-from supybot.commands import *
-from supybot.commands import ProcessTimeoutError
-import supybot.plugins as plugins
-import supybot.ircmsgs as ircmsgs
-import supybot.callbacks as callbacks
-import supybot.ircutils as ircutils
-import supybot.ircdb as ircdb
-import supybot.utils as utils
-
+from supybot import callbacks, ircdb, ircmsgs, ircutils, utils
+from supybot.commands import ProcessTimeoutError, process
 import re
-import sys
 
 try:
     from supybot.i18n import PluginInternationalization
     _ = PluginInternationalization('Sedster')
 except ImportError:
-    _ = lambda x: x
-
-TAG_SEEN = 'Sedster.seen'
-TAG_IS_REGEX = 'Stdster.isRegex'
+    def _(x):
+        return x
 
 SED_REGEX = re.compile(
     # Match and save the delimiter (any one symbol) as a named group
@@ -65,8 +55,10 @@ SED_REGEX = re.compile(
 # Replace newlines and friends with things like literal '\n' (backslash and 'n')
 axe_spaces = utils.str.MultipleReplacer({'\n': '\\n', '\t': '\\t', '\r': '\\r'})
 
+
 class SearchNotFoundError(Exception):
     pass
+
 
 class Sedster(callbacks.PluginRegexp):
     '''
@@ -105,7 +97,7 @@ class Sedster(callbacks.PluginRegexp):
     flags = 0  # Make callback matching case sensitive
 
     @staticmethod
-    def _unpack_sed(expr):
+    def _unpack_sed(expr):  # noqa
         if '\0' in expr:
             raise ValueError('Expression can\'t contain NUL')
 
@@ -145,7 +137,7 @@ class Sedster(callbacks.PluginRegexp):
             elif flag in '0123456789':
                 if count is None:
                     count = 0
-                count = count*10 + int(flag)
+                count = count * 10 + int(flag)
 
         if count is None:
             count = 1
@@ -153,21 +145,6 @@ class Sedster(callbacks.PluginRegexp):
         pattern = re.compile(pattern, flags)
 
         return (pattern, replacement, count, raw_flags)
-
-    # Tag all messages that Sedster has seen before. This slightly optimizes the ignoreRegex
-    # feature as all messages tagged with Sedster.seen but not Sedster.isRegex is NOT a regexp.
-    # If we didn't have this tag, we'd have to run a regexp match on each message in the history
-    # to check if it's a regexp, as there could've been regexp-like messages sent before
-    # Sedster was enabled.
-    def doNotice(self, irc, msg):
-        if self.registryValue('enable', msg.channel, irc.network):
-            msg.tag(TAG_SEEN)
-
-    def doPrivmsg(self, irc, msg):
-       # callbacks.PluginRegexp works by defining doPrivmsg(), we don't want to overwrite
-       # its behaviour
-       super().doPrivmsg(irc, msg)
-       self.doNotice(irc, msg)
 
     # Sedster main routine. This is called automatically by callbacks.PluginRegexp on every
     # message that matches the SED_REGEX expression defined in constants.py
@@ -178,7 +155,6 @@ class Sedster(callbacks.PluginRegexp):
 
         self.log.debug(_('Sedster: running on %s/%s for %s'), irc.network, msg.channel, regex)
         iterable = reversed(irc.state.history)
-        msg.tag(TAG_IS_REGEX)
 
         try:
             (pattern, replacement, count, flags) = self._unpack_sed(msg.args[1])
@@ -190,8 +166,18 @@ class Sedster(callbacks.PluginRegexp):
 
         regex_timeout = self.registryValue('processTimeout')
         try:
-            message = process(self._replacer_process, irc, msg, pattern, replacement, count, iterable,
-                    timeout=regex_timeout, pn=self.name(), cn='replacer')
+            message = process(
+                self._replacer_process,
+                irc,
+                msg,
+                pattern,
+                replacement,
+                count,
+                iterable,
+                timeout=regex_timeout,
+                pn=self.name(),
+                cn='replacer',
+            )
         except ProcessTimeoutError:
             irc.error(_('Search timed out.'))
         except SearchNotFoundError:
@@ -206,55 +192,49 @@ class Sedster(callbacks.PluginRegexp):
 
     def _replacer_process(self, irc, msg, pattern, replacement, count, messages):
         for m in messages:
-            if m.command in ('PRIVMSG') and ircutils.strEqual(m.args[0], msg.args[0]) and m.tagged('receivedBy') == irc:
-                # Don't do actions.
-                if ircmsgs.isAction(m):
-                    continue
+            if m.command != 'PRIVMSG':
+                continue
+            if ircmsgs.isAction(m):
+                continue
+            if not ircutils.strEqual(m.args[0], msg.args[0]):
+                continue
+            if not m.tagged('receivedBy') == irc:
+                continue
+            if not ircutils.strEqual(m.nick, msg.nick):
+                continue
+            if ircdb.checkIgnored(m.prefix):
+                continue
 
-                # Skip if message is from different sender.
-                if m.nick != msg.nick:
-                    continue
+            # Ignore messages containing a regexp if ignoreRegex is on.
+            if self.registryValue('ignoreRegex', msg.channel, irc.network) and SED_REGEX.match(m.args[1]):
+                self.log.debug(_('Skipping message %s because it is tagged as isRegex'), m.args[1])
+                continue
 
-                # Don't snarf ignored users' messages unless specifically told to.
-                if ircdb.checkIgnored(m.prefix):
-                    continue
+            # Do the replacements.
+            text = m.args[1]
+            try:
+                replace_result = pattern.search(text)
+                if replace_result:
+                    if self.registryValue('boldReplacementText', msg.channel, irc.network):
+                        replacement = ircutils.bold(replacement)
 
-                # Test messages sent before Sedster was activated.
-                # Mark them all as seen so we only need to do this check once per message.
-                if not m.tagged(TAG_SEEN):
-                    m.tag(TAG_SEEN)
-                    if SED_REGEX.match(m.args[1]):
-                        m.tag(TAG_IS_REGEX)
+                    if count == 0:
+                        subst = pattern.sub(replacement, text, count)
+                    else:
+                        position = [(match.start(), match.end()) for match in pattern.finditer(text)][count - 1]
+                        subst = text[:position[0]] + replacement + text[position[1]:]
 
-                # Ignore messages containing a regexp if ignoreRegex is on.
-                if self.registryValue('ignoreRegex', msg.channel, irc.network) and m.tagged(TAG_IS_REGEX):
-                    self.log.debug(_('Skipping message %s because it is tagged as isRegex'), m.args[1])
-                    continue
+                    subst = axe_spaces(subst)
 
-                # Do the replacements.
-                text = m.args[1]
-                try:
-                    replace_result = pattern.search(text)
-                    if replace_result:
-                        if self.registryValue('boldReplacementText', msg.channel, irc.network):
-                            replacement = ircutils.bold(replacement)
-
-                        if count == 0:
-                            subst = pattern.sub(replacement, text, count)
-                        else:
-                            position = [(match.start(), match.end()) for match in pattern.finditer(text)][count - 1]
-                            subst = text[:position[0]] + replacement + text[position[1]:]
-
-                        subst = axe_spaces(subst)
-
-                        return _('<%s> %s') % (msg.nick, subst)
-                except Exception as e:
-                    self.log.warning(_('Sedster error: %s'), e, exc_info=True)
-                    raise
+                    return _('<%s> %s') % (msg.nick, subst)
+            except Exception as e:
+                self.log.warning(_('Sedster error: %s'), e, exc_info=True)
+                raise
 
         self.log.debug(_('Sedster: Search %r not found in the last %i messages of %s.'),
-                msg.args[1], len(irc.state.history), msg.args[0])
+                       msg.args[1], len(irc.state.history), msg.args[0])
         raise SearchNotFoundError()
+
 
 Class = Sedster
 

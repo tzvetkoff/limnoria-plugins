@@ -36,6 +36,7 @@ import requests
 from time import time
 from supybot import conf, utils, ircmsgs, callbacks
 from supybot.commands import wrap
+
 try:
     from supybot.i18n import PluginInternationalization
     _ = PluginInternationalization('Smurf')
@@ -117,7 +118,7 @@ class Smurf(callbacks.Plugin):
             match = re.search(utils.web._charset_re, text, re.MULTILINE)
             if match:
                 return match.group('charset')[1:-1]
-        except:
+        except:  # noqa
             match = re.search(utils.web._charset_re.encode(), text, re.MULTILINE)
             if match:
                 return match.group('charset').decode()[1:-1]
@@ -126,7 +127,7 @@ class Smurf(callbacks.Plugin):
             import charset_normalizer
             result = charset_normalizer.detect(text)
             return result['encoding']
-        except:
+        except:  # noqa
             return None
 
     def getTitle(self, irc, msg, url):
