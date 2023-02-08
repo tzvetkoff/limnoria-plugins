@@ -1,5 +1,5 @@
 ###
-# Copyright (c) 2022 Latchezar Tzvetkoff
+# Copyright (c) 2023 Latchezar Tzvetkoff
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -27,15 +27,15 @@
 # POSSIBILITY OF SUCH DAMAGE.
 ###
 
-"""
+'''
 Smurf: Fetches URL titles
-"""
+'''
 
 import sys
 import supybot
 from supybot import world
 
-__version__ = '2022.07.12'
+__version__ = '2023.01.07'
 __author__ = supybot.Author('Latchezar Tzvetkoff', 'Polizei', 'latchezar@tzvetkoff.net')
 __contributors__ = {}
 __url__ = 'https://github.com/tzvetkoff/limnoria-plugins'

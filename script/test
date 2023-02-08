@@ -1,0 +1,25 @@
+#!/bin/bash
+
+ROOT="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/.." && pwd)"
+
+COMMAND=('supybot-test'
+         '--clean'
+         "--plugins-dir=${ROOT}")
+
+if [[ -n "${1}" ]]; then
+  while read -r plugin; do
+    if [[ "${plugin}" != "${1}" ]]; then
+      COMMAND+=("--exclude=${ROOT}/${plugin}")
+    fi
+  done < <(find "${ROOT}" -mindepth 1 -maxdepth 1 -type d -printf '%P\n')
+else
+  COMMAND+=("--exclude=${ROOT}/backup"
+            "--exclude=${ROOT}/script"
+            "--exclude=${ROOT}/test-conf"
+            "--exclude=${ROOT}/test-data"
+            "--exclude=${ROOT}/test-logs"
+            "--exclude=${ROOT}/tmp"
+            "--exclude=${ROOT}/web")
+fi
+
+exec "${COMMAND[@]}"

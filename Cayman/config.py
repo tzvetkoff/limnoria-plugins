@@ -27,35 +27,58 @@
 # POSSIBILITY OF SUCH DAMAGE.
 ###
 
-'''
-RateSX: Fetches crypto currency prices from https://rate.sx/
-'''
+import supybot.conf as conf
+import supybot.registry as registry
 
-import sys
-import supybot
-from supybot import world
+try:
+    from supybot.i18n import PluginInternationalization
 
-__version__ = '2023.01.07'
-__author__ = supybot.Author('Latchezar Tzvetkoff', 'Polizei', 'latchezar@tzvetkoff.net')
-__contributors__ = {}
-__url__ = 'https://github.com/tzvetkoff/limnoria-plugins'
+    _ = PluginInternationalization('Cayman')
+except:
+    # Placeholder that allows to run the plugin on a bot
+    # without the i18n module
+    _ = lambda x: x
 
-from . import config
-from . import plugin
-if sys.version_info >= (3, 4):
-    from importlib import reload
-else:
-    from imp import reload
-# In case we're being reloaded.
-reload(config)
-reload(plugin)
-# Add more reloads here if you add third-party modules and want them to be
-# reloaded when this plugin is reloaded.  Don't forget to import them as well!
 
-if world.testing:
-    from . import test  # noqa
+def configure(advanced):
+    # This will be called by supybot to configure this module.  advanced is
+    # a bool that specifies whether the user identified themself as an advanced
+    # user or not.  You should effect your configuration by manipulating the
+    # registry as appropriate.
+    from supybot.questions import expect, anything, something, yn
 
-Class = plugin.Class
-configure = config.configure
+    conf.registerPlugin('Cayman', True)
+
+
+Cayman = conf.registerPlugin('Cayman')
+
+conf.registerChannelValue(
+    Cayman,
+    'enable',
+    registry.Boolean(True, _('Turns on and off Cayman.')),
+)
+conf.registerGlobalValue(
+    Cayman,
+    'linkChance',
+    registry.Integer(67, _('0-100 chance to trigger a link to a cat gif')),
+)
+conf.registerGlobalValue(
+    Cayman,
+    'factChance',
+    registry.Integer(33, _('0-100 chance to trigger a cat fact')),
+)
+conf.registerGlobalValue(
+    Cayman,
+    'throttle',
+    registry.Integer(60, _('Will only trigger if it has been X seconds since the last trigger')),
+)
+conf.registerGlobalValue(
+    Cayman,
+    'triggerWords',
+    registry.CommaSeparatedListOfStrings(
+        ['meow', 'cat', 'cats', 'kitten', 'kittens'],
+        _('List of words that may trigger facts or links'),
+    ),
+)
 
 # vim:ft=python:ts=4:sts=4:sw=4:et:tw=119

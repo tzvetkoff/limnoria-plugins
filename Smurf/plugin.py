@@ -1,5 +1,5 @@
 ###
-# Copyright (c) 2022 Latchezar Tzvetkoff
+# Copyright (c) 2023 Latchezar Tzvetkoff
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -45,13 +45,13 @@ except ImportError:
 
 
 class Smurf(callbacks.Plugin):
-    """Fetches URL titles"""
+    '''Fetches URL titles'''
     threaded = True
 
     def doPrivmsg(self, irc, msg):
-        if not self.registryValue('enable', msg.channel, irc.network):
-            return
         if not msg.channel:
+            return
+        if not self.registryValue('enable', msg.channel, irc.network):
             return
         if ircmsgs.isCtcp(msg) and not ircmsgs.isAction(msg):
             return
@@ -79,10 +79,11 @@ class Smurf(callbacks.Plugin):
                 result = self.getTitle(irc, msg, url)
                 if result:
                     (title, domain) = result
-                    irc.sendMsg(ircmsgs.privmsg(msg.channel, f'>> {title} (at {domain})'))
+
+                    irc.reply(_('>> %s (at %s)') % (title, domain), prefixNick=False)
             except SmurfException as e:
                 if reportErrors:
-                    irc.sendMsg(ircmsgs.privmsg(msg.channel, f'!! Error fetching title for {e.domain}: {e.message}'))
+                    irc.reply(_('!! Error fetching title for %s: %s') % (e.domain, e.message), prefixNick=False)
 
             if not smurfMultipleURLs:
                 break
@@ -91,10 +92,10 @@ class Smurf(callbacks.Plugin):
         'url',
     ])
     def smurf(self, irc, msg, args, url):
-        """<url>
+        '''<url>
 
         Fetch title from URL
-        """
+        '''
 
         reportErrors = self.registryValue('reportErrors', msg.channel, irc.network)
 
@@ -102,12 +103,12 @@ class Smurf(callbacks.Plugin):
             result = self.getTitle(irc, msg, url)
             if result:
                 (title, domain) = result
-                irc.reply(f'>> {title} (at {domain})')
+                irc.reply(_('>> %s (at %s)') % (title, domain))
             else:
-                irc.reply('!! No title found')
+                irc.reply(_('!! No title found'))
         except SmurfException as e:
             if reportErrors:
-                irc.reply(f'!! Error fetching title for {e.domain}: {e.message}')
+                irc.reply(_('!! Error fetching title for %s: %s') % (e.domain, e.message))
 
         pass
 
@@ -169,18 +170,18 @@ class Smurf(callbacks.Plugin):
                     if size >= max_size:
                         break
                     if time() - t > timeout:
-                        self.log.error('Smurf: URL <%s> timed out', url)
-                        raise SmurfException(parsed_url.netloc, 'Timeout')
+                        self.log.error(_('Smurf: URL <%s> timed out'), url)
+                        raise SmurfException(parsed_url.netloc, _('Timeout'))
 
                 try:
                     text = text.decode(self.getEncoding(text) or 'utf8', 'replace')
                 except UnicodeDecodeError:
-                    self.log.error('Smurf: URL <%s> - Cannot guess encoding')
-                    raise SmurfException(parsed_url.netloc, 'Cannot guess encoding')
+                    self.log.error(_('Smurf: URL <%s> - Cannot guess encoding'), url)
+                    raise SmurfException(parsed_url.netloc, _('Cannot guess encoding'))
         except SmurfException:
             raise
         except Exception as e:
-            self.log.error('Smurf: URL <%s> raised <%s>', url, str(e))
+            self.log.error(_('Smurf: URL <%s> raised <%s>'), url, str(e))
             raise SmurfException(parsed_url.netloc, str(e))
 
         try:

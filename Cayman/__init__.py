@@ -28,7 +28,7 @@
 ###
 
 '''
-RateSX: Fetches crypto currency prices from https://rate.sx/
+Cayman: Displays cat facts or cat gifs based on probability
 '''
 
 import sys

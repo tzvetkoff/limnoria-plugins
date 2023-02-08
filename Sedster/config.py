@@ -27,35 +27,50 @@
 # POSSIBILITY OF SUCH DAMAGE.
 ###
 
-'''
-RateSX: Fetches crypto currency prices from https://rate.sx/
-'''
 
-import sys
-import supybot
-from supybot import world
+from supybot import conf
+import supybot.registry as registry
+try:
+    from supybot.i18n import PluginInternationalization
+    _ = PluginInternationalization('Sedster')
+except Exception:
+    def _(x):
+        return x
 
-__version__ = '2023.01.07'
-__author__ = supybot.Author('Latchezar Tzvetkoff', 'Polizei', 'latchezar@tzvetkoff.net')
-__contributors__ = {}
-__url__ = 'https://github.com/tzvetkoff/limnoria-plugins'
 
-from . import config
-from . import plugin
-if sys.version_info >= (3, 4):
-    from importlib import reload
-else:
-    from imp import reload
-# In case we're being reloaded.
-reload(config)
-reload(plugin)
-# Add more reloads here if you add third-party modules and want them to be
-# reloaded when this plugin is reloaded.  Don't forget to import them as well!
+def configure(advanced):
+    from supybot.questions import output
+    conf.registerPlugin('Sedster', True)
+    if advanced:
+        output('The Sedster plugin allows you to make Perl/sed-style regex replacements to your chat history.')
 
-if world.testing:
-    from . import test  # noqa
 
-Class = plugin.Class
-configure = config.configure
+Sedster = conf.registerPlugin('Sedster')
+
+conf.registerChannelValue(
+    Sedster,
+    'enable',
+    registry.Boolean(False, _('Should Perl/sed-style regex replacing work in this channel?')),
+)
+conf.registerChannelValue(
+    Sedster,
+    'ignoreRegex',
+    registry.Boolean(True, _('Should Perl/sed regex replacing ignore messages which look like valid regex?')),
+)
+conf.registerChannelValue(
+    Sedster,
+    'boldReplacementText',
+    registry.Boolean(True, _('Should the replacement text be bolded?')),
+)
+conf.registerChannelValue(
+    Sedster,
+    'displayErrors',
+    registry.Boolean(True, _('Should errors be displayed?')),
+)
+conf.registerGlobalValue(
+    Sedster,
+    'processTimeout',
+    registry.PositiveFloat(0.5,  _('Sets the timeout when processing a single regexp.')),
+)
 
 # vim:ft=python:ts=4:sts=4:sw=4:et:tw=119

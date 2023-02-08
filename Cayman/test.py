@@ -27,35 +27,18 @@
 # POSSIBILITY OF SUCH DAMAGE.
 ###
 
-'''
-RateSX: Fetches crypto currency prices from https://rate.sx/
-'''
+# pylama:ignore=W0401
 
-import sys
-import supybot
-from supybot import world
+from supybot.test import *
 
-__version__ = '2023.01.07'
-__author__ = supybot.Author('Latchezar Tzvetkoff', 'Polizei', 'latchezar@tzvetkoff.net')
-__contributors__ = {}
-__url__ = 'https://github.com/tzvetkoff/limnoria-plugins'
 
-from . import config
-from . import plugin
-if sys.version_info >= (3, 4):
-    from importlib import reload
-else:
-    from imp import reload
-# In case we're being reloaded.
-reload(config)
-reload(plugin)
-# Add more reloads here if you add third-party modules and want them to be
-# reloaded when this plugin is reloaded.  Don't forget to import them as well!
+class CaymanTestCase(PluginTestCase):
+    plugins = ('Cayman',)
+    config = {'plugins.cayman.enable': True}
+    timeout = 15
 
-if world.testing:
-    from . import test  # noqa
-
-Class = plugin.Class
-configure = config.configure
+    @unittest.skipUnless(network, 'Cayman tests require networking')
+    def testCaymanLink(self):
+        self.assertRegexp('catlink', r'http')
 
 # vim:ft=python:ts=4:sts=4:sw=4:et:tw=119

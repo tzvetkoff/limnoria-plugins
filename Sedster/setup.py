@@ -27,35 +27,10 @@
 # POSSIBILITY OF SUCH DAMAGE.
 ###
 
-'''
-RateSX: Fetches crypto currency prices from https://rate.sx/
-'''
+from supybot.setup import plugin_setup
 
-import sys
-import supybot
-from supybot import world
-
-__version__ = '2023.01.07'
-__author__ = supybot.Author('Latchezar Tzvetkoff', 'Polizei', 'latchezar@tzvetkoff.net')
-__contributors__ = {}
-__url__ = 'https://github.com/tzvetkoff/limnoria-plugins'
-
-from . import config
-from . import plugin
-if sys.version_info >= (3, 4):
-    from importlib import reload
-else:
-    from imp import reload
-# In case we're being reloaded.
-reload(config)
-reload(plugin)
-# Add more reloads here if you add third-party modules and want them to be
-# reloaded when this plugin is reloaded.  Don't forget to import them as well!
-
-if world.testing:
-    from . import test  # noqa
-
-Class = plugin.Class
-configure = config.configure
+plugin_setup(
+    'Sedster',
+)
 
 # vim:ft=python:ts=4:sts=4:sw=4:et:tw=119

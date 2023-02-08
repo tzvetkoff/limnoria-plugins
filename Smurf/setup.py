@@ -1,5 +1,5 @@
 ###
-# Copyright (c) 2022 Latchezar Tzvetkoff
+# Copyright (c) 2023 Latchezar Tzvetkoff
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -31,6 +31,7 @@ from supybot.setup import plugin_setup
 
 plugin_setup(
     'Smurf',
+    install_requires=['requests'],
 )
 
 # vim:ft=python:ts=4:sts=4:sw=4:et:tw=119

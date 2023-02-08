@@ -1,5 +1,5 @@
 ###
-# Copyright (c) 2022 Latchezar Tzvetkoff
+# Copyright (c) 2023 Latchezar Tzvetkoff
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -40,16 +40,16 @@ from re import search
 
 
 class Atheme(callbacks.Plugin):
-    """Atheme services integration"""
+    '''Atheme services integration'''
     threaded = True
 
     def __init__(self, irc):
-        """Initialize the plugin internal variables"""
+        '''Initialize the plugin internal variables'''
         super(Atheme, self).__init__(irc)
         self.recoveredChannels = []
 
     def do471(self, irc, msg):
-        """ERR_CHANNELISFULL - Clear +l mode"""
+        '''ERR_CHANNELISFULL - Clear +l mode'''
         channel = msg.args[1]
         if not self.registryValue('ChanServ.enable', channel, irc.network):
             return
@@ -60,7 +60,7 @@ class Atheme(callbacks.Plugin):
         irc.sendMsg(self._chanserv(('RECOVER', channel)))
 
     def do473(self, irc, msg):
-        """ERR_INVITEONLYCHAN - Request invite from ChanServ"""
+        '''ERR_INVITEONLYCHAN - Request invite from ChanServ'''
         channel = msg.args[1]
         if not self.registryValue('ChanServ.enable', channel, irc.network):
             return
@@ -69,7 +69,7 @@ class Atheme(callbacks.Plugin):
         irc.sendMsg(self._chanserv(('INVITE', channel)))
 
     def do474(self, irc, msg):
-        """ERR_BANNEDFROMCHAN - Request unban from ChanServ"""
+        '''ERR_BANNEDFROMCHAN - Request unban from ChanServ'''
         channel = msg.args[1]
         if not self.registryValue('ChanServ.enable', channel, irc.network):
             return
@@ -78,7 +78,7 @@ class Atheme(callbacks.Plugin):
         irc.sendMsg(self._chanserv(('UNBAN', channel)))
 
     def do475(self, irc, msg):
-        """ERR_BADCHANNELKEY - Request key from ChanServ"""
+        '''ERR_BADCHANNELKEY - Request key from ChanServ'''
         channel = msg.args[1]
         if not self.registryValue('ChanServ.enable', channel, irc.network):
             return
@@ -87,7 +87,7 @@ class Atheme(callbacks.Plugin):
         irc.sendMsg(self._chanserv(('GETKEY', channel)))
 
     def doMode(self, irc, msg):
-        """Opped / deopped event hooks"""
+        '''Opped / deopped event hooks'''
         channel = msg.channel
         if not self.registryValue('ChanServ.enable', channel, irc.network):
             return
@@ -105,7 +105,7 @@ class Atheme(callbacks.Plugin):
                 irc.sendMsg(self._chanserv(('OP', channel)))
 
     def doInvite(self, irc, msg):
-        """Invite - see if we're invited by ChanServ and join channel"""
+        '''Invite - see if we're invited by ChanServ and join channel'''
         channel = msg.args[1]
         if not self.registryValue('ChanServ.enable', channel, irc.network):
             return
@@ -115,7 +115,7 @@ class Atheme(callbacks.Plugin):
             irc.sendMsg(ircmsgs.join(channel))
 
     def doJoin(self, irc, msg):
-        """Bot joined a channel - request op"""
+        '''Bot joined a channel - request op'''
         channel = msg.channel
         if not self.registryValue('ChanServ.enable', channel, irc.network):
             return
@@ -125,7 +125,7 @@ class Atheme(callbacks.Plugin):
             irc.sendMsg(self._chanserv(('OP', channel)))
 
     def doNotice(self, irc, msg):
-        """Handle notices from NickServ/ChanServ"""
+        '''Handle notices from NickServ/ChanServ'''
         nickserv = self.registryValue('NickServ.nickname', network=irc.network)
         chanserv = self.registryValue('ChanServ.nickname', network=irc.network)
         if nickserv and ircutils.strEqual(msg.nick, nickserv):
@@ -134,11 +134,11 @@ class Atheme(callbacks.Plugin):
             self.doChanServNotice(irc, msg)
 
     def doNickServNotice(self, irc, msg):
-        """Handle notices from NickServ"""
+        '''Handle notices from NickServ'''
         pass
 
     def doChanServNotice(self, irc, msg):
-        """Handle notices from ChanServ"""
+        '''Handle notices from ChanServ'''
         text = msg.args[1]
         text = ircutils.stripFormatting(text)
 
@@ -157,14 +157,14 @@ class Atheme(callbacks.Plugin):
                 irc.sendMsg(ircmsgs.join(channel, key=key))
 
     def _nickserv(self, args=(), prefix='', msg=None):
-        """Construct a NickServ command"""
+        '''Construct a NickServ command'''
         if msg and not prefix:
             prefix = msg.prefix
 
         return ircmsgs.IrcMsg(command='NICKSERV', args=args, prefix=prefix, msg=msg)
 
     def _chanserv(self, args=(), prefix='', msg=None):
-        """Construct a ChanServ command"""
+        '''Construct a ChanServ command'''
         if msg and not prefix:
             prefix = msg.prefix
 

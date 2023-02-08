@@ -28,7 +28,7 @@
 ###
 
 '''
-RateSX: Fetches crypto currency prices from https://rate.sx/
+Sedster: Replaces messages with sed-style regular expressions
 '''
 
 import sys
