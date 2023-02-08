@@ -50,11 +50,11 @@ class Cayman(callbacks.Plugin):
     threaded = True
     last_message_timestamp = False
 
-    def _get_link(self):
+    def _gif(self):
         response = requests.get('http://edgecats.net/random')
         return response.text
 
-    def _get_fact(self):
+    def _fact(self):
         response = requests.get('https://catfact.ninja/fact')
         data = json.loads(response.text)
         return data['fact']
@@ -65,14 +65,14 @@ class Cayman(callbacks.Plugin):
         return not not pattern.search(message)
 
     @wrap([])
-    def catlink(self, irc, msg, args):
-        '''Gets a random cat gif link'''
-        irc.reply(self._get_link())
+    def catgif(self, irc, msg, args):
+        '''Gets a random cat gif'''
+        irc.reply(self._gif())
 
     @wrap([])
     def catfact(self, irc, msg, args):
         '''Gets a random cat fact'''
-        irc.reply(self._get_fact())
+        irc.reply(self._fact())
 
     def doPrivmsg(self, irc, msg):
         if not msg.channel:
@@ -103,9 +103,9 @@ class Cayman(callbacks.Plugin):
         fact_rand = random.randrange(0, 100) <= fact_chance
 
         if link_rand:
-            irc.reply(self._get_link(), prefixNick=False)
+            irc.reply(self._gif(), prefixNick=False)
         elif fact_rand:
-            irc.reply(self._get_fact(), prefixNick=False)
+            irc.reply(self._fact(), prefixNick=False)
 
 
 Class = Cayman

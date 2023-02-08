@@ -38,7 +38,7 @@ class CaymanTestCase(PluginTestCase):
     timeout = 15
 
     @unittest.skipUnless(network, 'Cayman tests require networking')
-    def testCaymanLink(self):
-        self.assertRegexp('catlink', r'http')
+    def testCaymanCatGif(self):
+        self.assertRegexp('catgif', r'http')
 
 # vim:ft=python:ts=4:sts=4:sw=4:et:tw=119

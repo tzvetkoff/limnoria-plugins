@@ -1,7 +1,5 @@
-Displays cat facts or cat gifs.
+# Cayman
 
-Forked from: https://github.com/butterscotchstallion/limnoria-plugins/tree/master/Cayenne
+Displays cat gifs or facts.
 
-python3 compatible<br>
-uses https://catfact.ninja/ as cat facts source<br> 
-channel config plugins.cayenne.enable (default: true)
+Basically a rewrite of https://github.com/oddluck/limnoria-plugins/tree/master/Cayenne.
