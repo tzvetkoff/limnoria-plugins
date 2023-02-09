@@ -54,9 +54,6 @@ class RateSX(callbacks.Plugin):
 
         Fetches crypto currency's price from https://rate.sx/
         '''
-        if not self.registryValue('enable', msg.channel, irc.network):
-            return
-
         if count is None:
             count = 1
         if target is None:

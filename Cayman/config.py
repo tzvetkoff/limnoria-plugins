@@ -32,22 +32,17 @@ import supybot.registry as registry
 
 try:
     from supybot.i18n import PluginInternationalization
-
-    _ = PluginInternationalization('Cayman')
-except:
-    # Placeholder that allows to run the plugin on a bot
-    # without the i18n module
-    _ = lambda x: x
+    _ = PluginInternationalization('RateSX')
+except Exception:
+    def _(x):
+        return x
 
 
 def configure(advanced):
-    # This will be called by supybot to configure this module.  advanced is
-    # a bool that specifies whether the user identified themself as an advanced
-    # user or not.  You should effect your configuration by manipulating the
-    # registry as appropriate.
-    from supybot.questions import expect, anything, something, yn
-
+    from supybot.questions import output
     conf.registerPlugin('Cayman', True)
+    if advanced:
+        output('The Cayman plugin displays cat gifs or facts based on probability.')
 
 
 Cayman = conf.registerPlugin('Cayman')
@@ -55,7 +50,7 @@ Cayman = conf.registerPlugin('Cayman')
 conf.registerChannelValue(
     Cayman,
     'enable',
-    registry.Boolean(True, _('Turns on and off Cayman.')),
+    registry.Boolean(False, _('Turns the plugin on/off')),
 )
 conf.registerGlobalValue(
     Cayman,

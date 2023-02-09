@@ -27,8 +27,8 @@
 # POSSIBILITY OF SUCH DAMAGE.
 ###
 
-from supybot import callbacks, ircmsgs, utils
-from supybot.commands import optional, wrap
+from supybot import callbacks, ircmsgs
+from supybot.commands import wrap
 try:
     from supybot.i18n import PluginInternationalization
     _ = PluginInternationalization('RateSX')
@@ -38,7 +38,6 @@ except ImportError:
 
 import random
 import datetime
-import os
 import re
 import json
 import requests
@@ -52,7 +51,7 @@ class Cayman(callbacks.Plugin):
 
     def _gif(self):
         response = requests.get('http://edgecats.net/random')
-        return response.text
+        return response.text.replace('http://', 'https://')
 
     def _fact(self):
         response = requests.get('https://catfact.ninja/fact')
@@ -99,8 +98,8 @@ class Cayman(callbacks.Plugin):
         link_chance = self.registryValue('linkChance')
         fact_chance = self.registryValue('factChance')
 
-        link_rand = random.randrange(0, 100) <= link_chance
-        fact_rand = random.randrange(0, 100) <= fact_chance
+        link_rand = random.randrange(1, 101) <= link_chance
+        fact_rand = random.randrange(1, 101) <= fact_chance
 
         if link_rand:
             irc.reply(self._gif(), prefixNick=False)
