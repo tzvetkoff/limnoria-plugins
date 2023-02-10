@@ -28,7 +28,7 @@
 ###
 
 '''
-Cayman: Displays cat gifs or facts based on probability
+Cayman: Displays cat gifs or facts in channels
 '''
 
 import sys

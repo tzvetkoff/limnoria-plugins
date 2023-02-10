@@ -38,7 +38,8 @@ except ImportError:
     def _(x):
         return x
 
-SED_REGEX = re.compile(
+# The regular expression that the plugin will react on.
+SEDSTER_REGEXP = re.compile(
     # Match and save the delimiter (any one symbol) as a named group
     r'^s(?P<delim>[^\w\s])'
 
@@ -52,8 +53,12 @@ SED_REGEX = re.compile(
     r'(?:(?P=delim)(?P<flags>[0-9a-z]*))?'
 )
 
-# Replace newlines and friends with things like literal '\n' (backslash and 'n')
-axe_spaces = utils.str.MultipleReplacer({'\n': '\\n', '\t': '\\t', '\r': '\\r'})
+# Replace newlines and friends with things like literal '\n'
+WHITESPACE_REPLACER = utils.str.MultipleReplacer({
+    '\n': '\\n',
+    '\t': '\\t',
+    '\r': '\\r',
+})
 
 
 class SearchNotFoundError(Exception):
@@ -63,41 +68,32 @@ class SearchNotFoundError(Exception):
 class Sedster(callbacks.PluginRegexp):
     '''
     Enable Sedster on the desired channels:
-    ``config channel #yourchannel plugins.sedster.enable True``
+    `config channel #yourchannel plugins.sedster.enable True`
     After enabling Sedster, typing a regex in the form
-    ``s/text/replacement/`` will make the bot announce replacements.
+    `s/text/replacement/` will make the bot announce replacements.
 
     ::
+        20:24 <Polizei> helli wirld
+        20:24 <Polizei> s/i/o/
+        20:24 <Limnoria> <Polizei> hello wirld
+        20:24 <Polizei> s/i/o/g
+        20:24 <Limnoria> <Polizei> hello world
+        20:24 <Polizei> s/i/o/2
+        20:24 <Limnoria> <Polizei> helli world
 
-       20:24 <Polizei> helli wirld
-       20:24 <Polizei> s/i/o/
-       20:24 <Limnoria> <Polizei> hello wirld
-       20:24 <Polizei> s/i/o/g
-       20:24 <Limnoria> <Polizei> hello world
-       20:24 <Polizei> s/i/o/2
-       20:24 <Limnoria> <Polizei> helli world
+    The following regex flags (i.e. the `g` in `s/abc/def/g`, etc.) are supported:
 
-    You can also do ``othernick: s/text/replacement/`` to only replace
-    messages from a certain user. Supybot ignores are respected by the plugin,
-    and messages from ignored users will only be considered if their nick is
-    explicitly given.
-
-    Regex flags
-    ^^^^^^^^^^^
-
-    The following regex flags (i.e. the ``g`` in ``s/abc/def/g``, etc.) are supported:
-
-    - ``i``: case insensitive replacement
-    - ``g``: replace all occurences of the original text
+    - `i`: case insensitive replacement
+    - `g`: replace all occurences of the original text
+    - `NUMBER`: replace the nth occurence, e.g. `s/foo/bar/2` will replace only the 2nd
     '''
 
     threaded = True
-    public = True
-    unaddressedRegexps = ['replacer']
-    flags = 0  # Make callback matching case sensitive
 
-    @staticmethod
-    def _unpack_sed(expr):  # noqa
+    flags = 0   # Make callback matching case sensitive
+    unaddressedRegexps = ['sedster_hook']
+
+    def _parse_regexp(self, expr):
         if '\0' in expr:
             raise ValueError('Expression can\'t contain NUL')
 
@@ -112,7 +108,7 @@ class Sedster(callbacks.PluginRegexp):
 
             escaped_expr += c
 
-        match = SED_REGEX.search(escaped_expr)
+        match = SEDSTER_REGEXP.search(escaped_expr)
 
         if not match:
             return
@@ -144,53 +140,67 @@ class Sedster(callbacks.PluginRegexp):
 
         pattern = re.compile(pattern, flags)
 
-        return (pattern, replacement, count, raw_flags)
+        return pattern, replacement, count, raw_flags
 
-    # Sedster main routine. This is called automatically by callbacks.PluginRegexp on every
-    # message that matches the SED_REGEX expression defined in constants.py
-    # The actual regexp is passed into PluginRegexp by setting __doc__ equal to the regexp.
-    def replacer(self, irc, msg, regex):
+    # Sedster main routine.
+    # This is called automatically by callbacks.PluginRegexp on every message that matches the SEDSTER_REGEXP regexp.
+    # The actual regexp is passed into PluginRegexp by setting `__doc__` on the hook method.
+    def sedster_hook(self, irc, msg, regex):
         if not self.registryValue('enable', msg.channel, irc.network):
             return
 
-        self.log.debug(_('Sedster: running on %s/%s for %s'), irc.network, msg.channel, regex)
-        iterable = reversed(irc.state.history)
-
         try:
-            (pattern, replacement, count, flags) = self._unpack_sed(msg.args[1])
+            pattern, replacement, count, flags = self._parse_regexp(msg.args[1])
         except Exception as e:
-            self.log.warning(_('Sedster parser error: %s'), e, exc_info=True)
+            self.log.error(_('Sedster parser error: %s'), e, exc_info=True)
             if self.registryValue('displayErrors', msg.channel, irc.network):
                 irc.error('%s.%s: %s' % (e.__class__.__module__, e.__class__.__name__, e))
             return
 
-        regex_timeout = self.registryValue('processTimeout')
+        history = reversed(irc.state.history)
+        timeout = self.registryValue('processTimeout')
+
         try:
             message = process(
-                self._replacer_process,
+                self._sedster_process,
                 irc,
                 msg,
                 pattern,
                 replacement,
                 count,
-                iterable,
-                timeout=regex_timeout,
+                history,
+                timeout=timeout,
                 pn=self.name(),
                 cn='replacer',
             )
-        except ProcessTimeoutError:
-            irc.error(_('Search timed out.'))
-        except SearchNotFoundError:
-            irc.error(_('Search not found in the last %i IRC messages on this network.') % len(irc.state.history))
+        except ProcessTimeoutError as e:
+            errmsg = _('Search timed out.')
+
+            self.log.error(errmsg, e, exc_info=True)
+            if self.registryValue('displayErrors', msg.channel, irc.network):
+                irc.error(errmsg)
+        except SearchNotFoundError as e:
+            errmsg = _('Search not found in the last %i IRC messages on this network') % (len(irc.state.history))
+
+            self.log.error(errmsg, e, exc_info=True)
+            if self.registryValue('displayErrors', msg.channel, irc.network):
+                irc.error(errmsg)
         except Exception as e:
-            self.log.warning(_('Sedster replacer error: %s'), e, exc_info=True)
+            errmsg = '%s.%s: %s' % (e.__class__.__module__, e.__class__.__name__, e)
+
+            self.log.error(errmsg, e, exc_info=True)
             if self.registryValue('displayErrors', msg.channel, irc.network):
                 irc.error('%s.%s: %s' % (e.__class__.__module__, e.__class__.__name__, e))
         else:
             irc.reply(message, prefixNick=False)
-    replacer.__doc__ = SED_REGEX.pattern
 
-    def _replacer_process(self, irc, msg, pattern, replacement, count, messages):
+    # Set the regexp so PluginRegexp knows how to handle it.
+    sedster_hook.__doc__ = SEDSTER_REGEXP.pattern
+
+    # Regular expression process callback.
+    # We run it in a subprocess so we can safely isolate it from the main process, and so we can also apply
+    # time constraints.
+    def _sedster_process(self, irc, msg, pattern, replacement, count, messages):
         for m in messages:
             if m.command != 'PRIVMSG':
                 continue
@@ -205,8 +215,8 @@ class Sedster(callbacks.PluginRegexp):
             if ircdb.checkIgnored(m.prefix):
                 continue
 
-            # Ignore messages containing a regexp if ignoreRegex is on.
-            if self.registryValue('ignoreRegex', msg.channel, irc.network) and SED_REGEX.match(m.args[1]):
+            # Ignore messages containing a regexp if ignoreRegexps is on.
+            if self.registryValue('ignoreRegexps', msg.channel, irc.network) and SEDSTER_REGEXP.match(m.args[1]):
                 self.log.debug(_('Skipping message %s because it is tagged as isRegex'), m.args[1])
                 continue
 
@@ -224,7 +234,7 @@ class Sedster(callbacks.PluginRegexp):
                         position = [(match.start(), match.end()) for match in pattern.finditer(text)][count - 1]
                         subst = text[:position[0]] + replacement + text[position[1]:]
 
-                    subst = axe_spaces(subst)
+                    subst = WHITESPACE_REPLACER(subst)
 
                     return _('<%s> %s') % (msg.nick, subst)
             except Exception as e:

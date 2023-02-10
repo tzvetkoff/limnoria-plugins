@@ -30,7 +30,7 @@ help:
 ##@ Testing
 ##
 
-## Run plugin tests
+## Run all plugins tests
 test:
 	./script/test
 

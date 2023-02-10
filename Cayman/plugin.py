@@ -44,7 +44,7 @@ import requests
 
 
 class Cayman(callbacks.Plugin):
-    '''Displays cat facts or cat gifs based on probability'''
+    '''Displays cat gifs or facts in channels'''
 
     threaded = True
     last_message_timestamp = False
@@ -58,8 +58,8 @@ class Cayman(callbacks.Plugin):
         data = json.loads(response.text)
         return data['fact']
 
-    def _matches_trigger_words(self, message):
-        words = [word.strip() for word in self.registryValue('triggerWords')]
+    def _match(self, message, channel, network):
+        words = [word.strip() for word in self.registryValue('triggerWords', channel, network)]
         pattern = re.compile(r'\b(' + '|'.join(words) + r')\b', re.IGNORECASE)
         return not not pattern.search(message)
 
@@ -82,7 +82,7 @@ class Cayman(callbacks.Plugin):
             return
         if ircmsgs.isCtcp(msg) and not ircmsgs.isAction(msg):
             return
-        if not self._matches_trigger_words(msg.args[1]):
+        if not self._match(msg.args[1], msg.channel, irc.network):
             return
 
         now = datetime.datetime.now()
@@ -91,12 +91,12 @@ class Cayman(callbacks.Plugin):
 
         if last_message_timestamp:
             seconds_since_last_message = (now - last_message_timestamp).total_seconds()
-            if seconds_since_last_message < self.registryValue('throttle'):
+            if seconds_since_last_message < self.registryValue('throttle', msg.channel, irc.network):
                 self.log.info('Cayman throttled.')
                 return
 
-        link_chance = self.registryValue('linkChance')
-        fact_chance = self.registryValue('factChance')
+        link_chance = self.registryValue('linkChance', msg.channel, irc.network)
+        fact_chance = self.registryValue('factChance', msg.channel, irc.network)
 
         link_rand = random.randrange(1, 101) <= link_chance
         fact_rand = random.randrange(1, 101) <= fact_chance

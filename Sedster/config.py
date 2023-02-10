@@ -54,13 +54,13 @@ conf.registerChannelValue(
 )
 conf.registerChannelValue(
     Sedster,
-    'ignoreRegex',
-    registry.Boolean(True, _('Should Perl/sed regex replacing ignore messages which look like valid regex?')),
+    'ignoreRegexps',
+    registry.Boolean(True, _('Should Perl/sed regexp replacing ignore messages which look like valid regexps?')),
 )
 conf.registerChannelValue(
     Sedster,
     'boldReplacementText',
-    registry.Boolean(True, _('Should the replacement text be bolded?')),
+    registry.Boolean(True, _('Should the replacement text be bold?')),
 )
 conf.registerChannelValue(
     Sedster,

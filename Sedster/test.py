@@ -32,6 +32,7 @@
 import unittest
 from supybot.test import *
 
+
 class SedsterTestCase(ChannelPluginTestCase):
     other = 'blah!blah@someone.else'
     other2 = 'ghost!ghost@spooky'
@@ -39,7 +40,7 @@ class SedsterTestCase(ChannelPluginTestCase):
     plugins = ('Sedster', 'Utilities')
     config = {'plugins.sedster.enable': True,
               'plugins.sedster.boldReplacementText': False,
-              'plugins.sedster.displayErrors': False}
+              'plugins.sedster.displayErrors': True}
 
     # getMsg() stalls if no message is ever sent (i.e. if the plugin fails to respond to a request)
     # We should limit the timeout to prevent the tests from taking forever.
@@ -134,7 +135,8 @@ class SedsterTestCase(ChannelPluginTestCase):
         self.feedMsg('blah: s a b ')
         self.feedMsg('blah: sdadbd')
 
-        m = self.getMsg('echo dummy message')
+        self.getMsg('echo dummy message')
+
         # XXX: this is a total hack...
         for msg in self.irc.state.history:
             self.assertNotIn('cbn\'t', str(msg))
@@ -148,6 +150,7 @@ class SedsterTestCase(ChannelPluginTestCase):
         self.feedMsg('s/strange/hilarious/', to=self.channel)
         m = self.getMsg(' ')
         self.assertIn('what a hilarious bug', str(m))
+
     def testCaseNormalizationInReplace(self):
         assert self.channel != self.channel.title()  # In case Limnoria's defaults change
         self.feedMsg('Segmentation fault', to=self.channel)

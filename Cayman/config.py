@@ -42,7 +42,7 @@ def configure(advanced):
     from supybot.questions import output
     conf.registerPlugin('Cayman', True)
     if advanced:
-        output('The Cayman plugin displays cat gifs or facts based on probability.')
+        output('The Cayman plugin displays cat gifs or facts in channels.')
 
 
 Cayman = conf.registerPlugin('Cayman')
@@ -52,22 +52,22 @@ conf.registerChannelValue(
     'enable',
     registry.Boolean(False, _('Turns the plugin on/off')),
 )
-conf.registerGlobalValue(
+conf.registerChannelValue(
     Cayman,
     'linkChance',
     registry.Integer(67, _('0-100 chance to trigger a link to a cat gif')),
 )
-conf.registerGlobalValue(
+conf.registerChannelValue(
     Cayman,
     'factChance',
     registry.Integer(33, _('0-100 chance to trigger a cat fact')),
 )
-conf.registerGlobalValue(
+conf.registerChannelValue(
     Cayman,
     'throttle',
     registry.Integer(60, _('Will only trigger if it has been X seconds since the last trigger')),
 )
-conf.registerGlobalValue(
+conf.registerChannelValue(
     Cayman,
     'triggerWords',
     registry.CommaSeparatedListOfStrings(

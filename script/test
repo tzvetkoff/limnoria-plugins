@@ -7,8 +7,12 @@ COMMAND=('supybot-test'
          "--plugins-dir=${ROOT}")
 
 if [[ -n "${1}" ]]; then
+  name="${1}"
+  name="${name%/}"
+  name="${name#./}"
+
   while read -r plugin; do
-    if [[ "${plugin}" != "${1}" ]]; then
+    if [[ "${plugin}" != "${name}" ]]; then
       COMMAND+=("--exclude=${ROOT}/${plugin}")
     fi
   done < <(find "${ROOT}" -mindepth 1 -maxdepth 1 -type d -printf '%P\n')

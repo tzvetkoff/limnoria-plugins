@@ -2,12 +2,15 @@
 
 Miscellaneous plugins for Limnoria.
 
-## RateSX
+## List
 
-Fetches crypto currency prices from https://rate.sx/.
+| Plugin  | Description                                          |
+| ------- | ---------------------------------------------------- |
+| Atheme  | Atheme services integration (**WIP**)                |
+| Cayman  | Displays cat gifs or facts in channels               |
+| Funk    | A collection of useless fun commands                 |
+| RateSX  | Fetches crypto currency prices from https://rate.sx/ |
+| Sedster | Replaces messages with sed-style regular expressions |
+| Smurf   | Fetches URL titles                                   |
 
-## Smurf
-
-Fetches URL titles.
-
-Written as a replacement to the inbuilt title snarfer, in order to properly handle Twitter/GitHub/other URLs.
+Each plugin supposedly has its own `README.md` and might have `requirements.txt`.

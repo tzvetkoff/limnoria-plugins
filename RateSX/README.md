@@ -2,12 +2,6 @@
 
 Fetches crypto currency prices from https://rate.sx/.
 
-## Configuration
-
-| Property                  | Description
-| -                         | -
-| **plugins.ratesx.enable** | Enable the plugin.  Network-speficic, channel-speficic.
-
 ## Usage
 
 ```
