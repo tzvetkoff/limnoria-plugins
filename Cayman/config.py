@@ -75,5 +75,10 @@ conf.registerChannelValue(
         _('List of words that may trigger facts or links'),
     ),
 )
+conf.registerChannelValue(
+    Cayman,
+    'prefixNick',
+    registry.Boolean(True, _('Whether to include nick prefix in command replies')),
+)
 
 # vim:ft=python:ts=4:sts=4:sw=4:et:tw=119

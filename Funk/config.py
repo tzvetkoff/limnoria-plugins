@@ -51,7 +51,7 @@ Funk = conf.registerPlugin('Funk')
 conf.registerChannelValue(
     Funk,
     'prefixNick',
-    registry.Boolean(True, _('Whether to reply with nick prefix or not')),
+    registry.Boolean(True, _('Whether to include nick prefix in command replies')),
 )
 
 # vim:ft=python:ts=4:sts=4:sw=4:et:tw=119

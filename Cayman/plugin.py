@@ -66,12 +66,12 @@ class Cayman(callbacks.Plugin):
     @wrap
     def catgif(self, irc, msg, args):
         '''Gets a random cat gif'''
-        irc.reply(self._gif())
+        irc.reply(self._gif(), prefixNick=self.registryValue('prefixNick', msg.channel, irc.network))
 
     @wrap
     def catfact(self, irc, msg, args):
         '''Gets a random cat fact'''
-        irc.reply(self._fact())
+        irc.reply(self._fact(), prefixNick=self.registryValue('prefixNick', msg.channel, irc.network))
 
     def doPrivmsg(self, irc, msg):
         if not msg.channel:
