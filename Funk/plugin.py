@@ -54,13 +54,13 @@ class Funk(callbacks.Plugin):
     def bofh(self, irc, msg, args):
         '''BOFH (Bastard Operator From Hell) excuse generator
         '''
-        irc.reply(self._randline('bofh.txt'))
+        irc.reply(self._randline('bofh.txt'), prefixNick=self.registryValue('prefixNick', msg.channel, irc.network))
 
     @wrap
     def chuck(self, irc, msg, args):
         '''Tells a Chuck Norris joke
         '''
-        irc.reply(self._randline('chuck.txt'))
+        irc.reply(self._randline('chuck.txt'), prefixNick=self.registryValue('prefixNick', msg.channel, irc.network))
 
     @wrap([
         'text',
@@ -69,7 +69,7 @@ class Funk(callbacks.Plugin):
         '''<text>
         Encode text with ROT13
         '''
-        irc.reply(codecs.encode(text, 'rot_13'))
+        irc.reply(codecs.encode(text, 'rot_13'), prefixNick=self.registryValue('prefixNick', msg.channel, irc.network))
 
     @wrap([
         'text',
@@ -78,7 +78,7 @@ class Funk(callbacks.Plugin):
         '''<text>
         Decode ROT13 text
         '''
-        irc.reply(codecs.decode(text, 'rot_13'))
+        irc.reply(codecs.decode(text, 'rot_13'), prefixNick=self.registryValue('prefixNick', msg.channel, irc.network))
 
     def _pigword(self, word):
         capital = word[:1] == word[:1].upper()
@@ -137,7 +137,7 @@ class Funk(callbacks.Plugin):
         '''
         words = re.split(r'\s+', text)
         words = [self._pigword(word) for word in words]
-        irc.reply(' '.join(words))
+        irc.reply(' '.join(words), prefixNick=self.registryValue('prefixNick', msg.channel, irc.network))
 
     @wrap([
         'text'
@@ -148,7 +148,7 @@ class Funk(callbacks.Plugin):
         '''
         words = re.split(r'\s+', text)
         words = [self._unpigword(word) for word in words]
-        irc.reply(' '.join(words))
+        irc.reply(' '.join(words), prefixNick=self.registryValue('prefixNick', msg.channel, irc.network))
 
 
 Class = Funk

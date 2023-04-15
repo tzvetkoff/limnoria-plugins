@@ -29,6 +29,8 @@
 
 
 from supybot import conf
+import supybot.registry as registry
+
 try:
     from supybot.i18n import PluginInternationalization
     _ = PluginInternationalization('Funk')
@@ -45,5 +47,11 @@ def configure(advanced):
 
 
 Funk = conf.registerPlugin('Funk')
+
+conf.registerChannelValue(
+    Funk,
+    'prefixNick',
+    registry.Boolean(True, _('Whether to reply with nick prefix or not')),
+)
 
 # vim:ft=python:ts=4:sts=4:sw=4:et:tw=119
