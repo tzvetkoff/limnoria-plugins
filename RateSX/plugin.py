@@ -44,7 +44,7 @@ class RateSX(callbacks.Plugin):
     threaded = True
 
     @wrap([
-        optional('int'),
+        optional('float'),
         'somethingWithoutSpaces',
         optional(('literal', {'to', 'TO', 'in', 'IN', '=>'})),
         optional('somethingWithoutSpaces'),
@@ -55,7 +55,7 @@ class RateSX(callbacks.Plugin):
         Fetches crypto currency's price from https://rate.sx/
         '''
         if count is None:
-            count = 1
+            count = 1.0
         if target is None:
             target = 'USD'
 
