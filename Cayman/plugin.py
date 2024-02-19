@@ -1,5 +1,5 @@
 ###
-# Copyright (c) 2023 Latchezar Tzvetkoff
+# Copyright (c) 2024 Latchezar Tzvetkoff
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -31,7 +31,7 @@ from supybot import callbacks, ircmsgs
 from supybot.commands import wrap
 try:
     from supybot.i18n import PluginInternationalization
-    _ = PluginInternationalization('RateSX')
+    _ = PluginInternationalization('Cayman')
 except ImportError:
     def _(x):
         return x

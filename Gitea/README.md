@@ -1,6 +1,6 @@
 # Gitea
 
-Gitea webhooks integration
+Gitea webhooks integration.
 
 ## Webhooks
 

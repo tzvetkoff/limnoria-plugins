@@ -1,5 +1,5 @@
 ###
-# Copyright (c) 2023 Latchezar Tzvetkoff
+# Copyright (c) 2024 Latchezar Tzvetkoff
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -32,7 +32,7 @@ import supybot.registry as registry
 
 try:
     from supybot.i18n import PluginInternationalization
-    _ = PluginInternationalization('RateSX')
+    _ = PluginInternationalization('Cayman')
 except Exception:
     def _(x):
         return x

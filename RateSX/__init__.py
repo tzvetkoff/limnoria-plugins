@@ -1,5 +1,5 @@
 ###
-# Copyright (c) 2023 Latchezar Tzvetkoff
+# Copyright (c) 2024 Latchezar Tzvetkoff
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -35,7 +35,7 @@ import sys
 import supybot
 from supybot import world
 
-__version__ = '2023.01.07'
+__version__ = '2024.01.07'
 __author__ = supybot.Author('Latchezar Tzvetkoff', 'Polizei', 'latchezar@tzvetkoff.net')
 __contributors__ = {}
 __url__ = 'https://github.com/tzvetkoff/limnoria-plugins'

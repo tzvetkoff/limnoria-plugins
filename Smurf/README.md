@@ -1,6 +1,6 @@
 # Smurf
 
-Fetches URL titles
+Fetches URL titles.
 
 ## Configuration
 
