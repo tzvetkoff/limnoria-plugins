@@ -72,7 +72,7 @@ class Smurf(callbacks.Plugin):
         reportErrors = self.registryValue('reportErrors', msg.channel, irc.network)
         smurfMultipleURLs = self.registryValue('smurfMultipleUrls', msg.channel, irc.network)
 
-        for url in utils.web.urlRe.findall(text):
+        for url in utils.web.httpUrlRe.findall(text):
             if ignoreUrlRe and ignoreUrlRe.search(url):
                 continue
 
@@ -139,6 +139,8 @@ class Smurf(callbacks.Plugin):
         headers = conf.defaultHttpHeaders(irc.network, msg.channel)
 
         parsed_url = utils.web.urlparse(url)
+        netloc = parsed_url.netloc
+
         if parsed_url.netloc in ('youtube.com', 'youtu.be') or parsed_url.netloc.endswith(('.youtube.com')):
             max_size = max(max_size, 524288)
         elif parsed_url.netloc in ('reddit.com', 'www.reddit.com', 'new.reddit.com'):
@@ -195,7 +197,7 @@ class Smurf(callbacks.Plugin):
 
         title = utils.str.normalizeWhitespace(''.join(parser.data).strip())
         if title:
-            return (title, parsed_url.netloc)
+            return (title, netloc)
 
         # Quietly weep...
 
