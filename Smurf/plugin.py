@@ -188,14 +188,14 @@ class Smurf(callbacks.Plugin):
             raise SmurfException(parsed_url.netloc, str(e))
 
         try:
-            parser = SmurfParser()
+            parser = SmurfParser(parsed_url.netloc)
             parser.feed(text)
         except Exception as e:
             raise SmurfException(parsed_url.netloc, str(e))
         finally:
             parser.close()
 
-        title = utils.str.normalizeWhitespace(''.join(parser.data).strip())
+        title = utils.str.normalizeWhitespace(''.join(parser.title()).strip())
         if title:
             return (title, netloc)
 
@@ -206,30 +206,62 @@ class SmurfParser(utils.web.HtmlToText):
     entitydefs = entitydefs.copy()
     entitydefs['nbsp'] = ' '
 
-    def __init__(self):
-        self.inTitle = False
-        self.inSvg = False
+    def __init__(self, netloc):
+        self.netloc = netloc
+
+        self.inside_title_tag = False
+        self.inside_svg_tag = False
+
+        self.og_title = None
+        self.og_description = None
+        self.og_video = None
+        self.og_image = None
+
         super().__init__(self)
 
-    @property
-    def inHtmlTitle(self):
-        return self.inTitle and not self.inSvg
+    def inside_html_title(self):
+        return self.inside_title_tag and not self.inside_svg_tag
 
     def handle_starttag(self, tag, attrs):
         if tag == 'title':
-            self.inTitle = True
+            self.inside_title_tag = True
         elif tag == 'svg':
-            self.inSvg = True
+            self.inside_svg_tag = True
+        elif tag == 'meta' and self.netloc in ('twitter.com'):
+            attrs = dict(attrs)
+
+            if not 'property' in attrs or not 'content' in attrs:
+                return
+
+            if attrs['property'] == 'og:title':
+                self.og_title = attrs['content']
+            elif attrs['property'] == 'og:description':
+                self.og_description = attrs['content']
+            elif attrs['property'] == 'og:video':
+                self.og_video = attrs['content']
+            elif attrs['property'] == 'og:image':
+                self.og_image = attrs['content']
 
     def handle_endtag(self, tag):
         if tag == 'title':
-            self.inTitle = False
+            self.inside_title_tag = False
         elif tag == 'svg':
-            self.inSvg = False
+            self.inside_svg_tag = False
 
     def append(self, data):
-        if self.inHtmlTitle:
+        if self.inside_html_title():
             super().append(data)
+
+    def title(self):
+        if self.netloc in ('twitter.com'):
+            if self.og_video:
+                return f'{self.og_title}: {self.og_description} - {self.og_video}'
+            elif self.og_image:
+                return f'{self.og_title}: {self.og_description} - {self.og_image}'
+
+            return f'{self.og_title}: {self.og_description}'
+
+        return self.data
 
 
 class SmurfException(Exception):
