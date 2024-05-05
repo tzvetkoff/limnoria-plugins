@@ -147,7 +147,6 @@ class Smurf(callbacks.Plugin):
             parsed_url = parsed_url._replace(netloc='old.reddit.com')
             url = urlunparse(parsed_url)
         elif parsed_url.netloc in ('mobile.twitter.com', 'twitter.com'):
-            max_size = max(max_size, 65536)
             parsed_url = parsed_url._replace(netloc='twitter.com')
             url = urlunparse(parsed_url)
             headers['User-agent'] = 'Googlebot-News'
