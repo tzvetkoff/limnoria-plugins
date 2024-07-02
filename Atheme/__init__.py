@@ -27,6 +27,8 @@
 # POSSIBILITY OF SUCH DAMAGE.
 ###
 
+# pylint:disable=deprecated-module
+
 '''
 Atheme: Atheme services integration
 '''

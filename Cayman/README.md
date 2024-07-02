@@ -9,6 +9,7 @@ Basically a rewrite of https://github.com/oddluck/limnoria-plugins/tree/master/C
 | Property                               | Description                                                    |
 | -------------------------------------- | -------------------------------------------------------------- |
 | **plugins.cayman.enable**              | Enable the plugin.                                             |
+| **plugins.cayman.timeout**             | Fetch timeout in seconds.                                      |
 | **plugins.cayman.linkChance**          | Probability to display a cat gif.                              |
 | **plugins.cayman.factChance**          | Probability to display a cat fact.                             |
 | **plugins.cayman.throttle**            | Throttle time in seconds.                                      |

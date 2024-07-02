@@ -27,6 +27,8 @@
 # POSSIBILITY OF SUCH DAMAGE.
 ###
 
+# pylint:disable=deprecated-module
+
 '''
 Cayman: Displays cat gifs or facts in channels
 '''

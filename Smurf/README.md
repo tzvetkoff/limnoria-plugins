@@ -4,12 +4,14 @@ Fetches URL titles.
 
 ## Configuration
 
-| Property                             | Description                                                          |
-| ------------------------------------ | -------------------------------------------------------------------- |
-| **plugins.smurf.enable**             | Enable the plugin.  Network-speficic, channel-speficic.              |
-| **plugins.smurf.reportErrors**       | Whether to report errors.  Network-speficic, channel-speficic.       |
-| **plugins.smurf.smurfMultipleURLs**  | Whether to smurf multiple URLs.  Network-speficic, channel-speficic. |
-| **plugins.smurf.ignoreUrlRegexp**    | Ignore URL regexp.  Network-speficic, channel-speficic.              |
+| Property                             | Description                                                               |
+| ------------------------------------ | ------------------------------------------------------------------------- |
+| **plugins.smurf.enable**             | Enable the plugin.  Network-specific, channel-specific.                   |
+| **plugins.smurf.timeout**            | Fetch timeout in seconds.  Network-specific, channel-specific.            |
+| **plugins.smurf.reportErrors**       | Whether to report errors.  Network-specific, channel-specific.            |
+| **plugins.smurf.showRecirectChain**  | Whether to show full redirect chain.  Network-specific, channel-specific. |
+| **plugins.smurf.smurfMultipleURLs**  | Whether to smurf multiple URLs.  Network-specific, channel-specific.      |
+| **plugins.smurf.ignoreUrlRegexp**    | Ignore URL regexp.  Network-specific, channel-specific.                   |
 
 ## Usage
 

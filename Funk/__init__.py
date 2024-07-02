@@ -27,6 +27,8 @@
 # POSSIBILITY OF SUCH DAMAGE.
 ###
 
+# pylint:disable=deprecated-module
+
 '''
 Funk: A collection of useless fun commands
 '''

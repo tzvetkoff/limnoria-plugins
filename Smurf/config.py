@@ -27,8 +27,13 @@
 # POSSIBILITY OF SUCH DAMAGE.
 ###
 
-from supybot import conf
-import supybot.registry as registry
+# pylint:disable=missing-module-docstring
+# pylint:disable=missing-function-docstring
+# pylint:disable=import-outside-toplevel
+# pylint:disable=broad-exception-caught
+
+from supybot import conf, registry
+
 try:
     from supybot.i18n import PluginInternationalization
     _ = PluginInternationalization('Smurf')
@@ -53,8 +58,18 @@ conf.registerChannelValue(
 )
 conf.registerChannelValue(
     Smurf,
+    'timeout',
+    registry.Float(5.0, _('Fetch timeout in seconds')),
+)
+conf.registerChannelValue(
+    Smurf,
     'reportErrors',
     registry.Boolean(False, _('Whether to report errors')),
+)
+conf.registerChannelValue(
+    Smurf,
+    'showRedirectChain',
+    registry.Boolean(False, _('Whether to display full redirect chain in hostnames'))
 )
 conf.registerChannelValue(
     Smurf,
@@ -65,11 +80,6 @@ conf.registerChannelValue(
     Smurf,
     'ignoreUrlRegexp',
     registry.Regexp(None, _('Ignore URL regexp')),
-)
-conf.registerChannelValue(
-    Smurf,
-    'timeout',
-    registry.Integer(5, _('Fetch timeout')),
 )
 
 # vim:ft=python:ts=4:sts=4:sw=4:et:tw=119

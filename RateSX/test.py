@@ -27,7 +27,12 @@
 # POSSIBILITY OF SUCH DAMAGE.
 ###
 
-# pylama:ignore=W0401
+# pylint:disable=missing-module-docstring
+# pylint:disable=missing-class-docstring
+# pylint:disable=missing-function-docstring
+# pylint:disable=wildcard-import
+# pylint:disable=unused-wildcard-import
+# pylint:disable=redefined-builtin
 
 from supybot.test import *
 

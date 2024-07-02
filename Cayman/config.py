@@ -27,8 +27,12 @@
 # POSSIBILITY OF SUCH DAMAGE.
 ###
 
-import supybot.conf as conf
-import supybot.registry as registry
+# pylint:disable=missing-module-docstring
+# pylint:disable=missing-function-docstring
+# pylint:disable=import-outside-toplevel
+# pylint:disable=broad-exception-caught
+
+from supybot import conf, registry
 
 try:
     from supybot.i18n import PluginInternationalization
@@ -51,6 +55,11 @@ conf.registerChannelValue(
     Cayman,
     'enable',
     registry.Boolean(False, _('Turns the plugin on/off')),
+)
+conf.registerChannelValue(
+    Cayman,
+    'timeout',
+    registry.Float(5.0, _('Fetch timeout in seconds')),
 )
 conf.registerChannelValue(
     Cayman,

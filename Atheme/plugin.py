@@ -27,6 +27,15 @@
 # POSSIBILITY OF SUCH DAMAGE.
 ###
 
+# pylint:disable=invalid-name
+# pylint:disable=missing-module-docstring
+# pylint:disable=missing-class-docstring
+# pylint:disable=missing-function-docstring
+# pylint:disable=too-many-ancestors
+# pylint:disable=too-many-arguments
+
+from re import search
+
 from supybot import callbacks
 from supybot.commands import ircutils, ircmsgs
 try:
@@ -36,8 +45,6 @@ except ImportError:
     def _(x):
         return x
 
-from re import search
-
 
 class Atheme(callbacks.Plugin):
     '''Atheme services integration'''
@@ -45,7 +52,7 @@ class Atheme(callbacks.Plugin):
 
     def __init__(self, irc):
         '''Initialize the plugin internal variables'''
-        super(Atheme, self).__init__(irc)
+        super().__init__(irc)
         self.recoveredChannels = []
 
     def do471(self, irc, msg):
@@ -56,7 +63,8 @@ class Atheme(callbacks.Plugin):
 
         self.log.info('Channel %s on %s is full, requesting recover from ChanServ', channel, irc.network)
         if self.registryValue('ChanServ.unrecover', channel, irc.network):
-            self.recoveredChannels.append('%s/%s' % (channel, irc.network))
+            key = f'{channel}/{irc.network}'
+            self.recoveredChannels.append(key)
         irc.sendMsg(self._chanserv(('RECOVER', channel)))
 
     def do473(self, irc, msg):
@@ -95,7 +103,7 @@ class Atheme(callbacks.Plugin):
         for (mode, arg) in ircutils.separateModes(msg.args[1:]):
             if mode == '+o' and ircutils.strEqual(arg, irc.nick):
                 self.log.info('Opped on channel %s on %s', channel, irc.network)
-                key = '%s/%s' % (channel, irc.network)
+                key = f'{channel}/{irc.network}'
                 if key in self.recoveredChannels:
                     self.recoveredChannels.remove(key)
                     self.log.info('Channel %s on %s needs unrecovering')
@@ -135,7 +143,6 @@ class Atheme(callbacks.Plugin):
 
     def doNickServNotice(self, irc, msg):
         '''Handle notices from NickServ'''
-        pass
 
     def doChanServNotice(self, irc, msg):
         '''Handle notices from ChanServ'''

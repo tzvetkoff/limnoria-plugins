@@ -27,6 +27,8 @@
 # POSSIBILITY OF SUCH DAMAGE.
 ###
 
+# pylint:disable=missing-module-docstring
+
 from supybot.setup import plugin_setup
 
 plugin_setup(

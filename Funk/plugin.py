@@ -27,6 +27,17 @@
 # POSSIBILITY OF SUCH DAMAGE.
 ###
 
+# pylint:disable=missing-module-docstring
+# pylint:disable=missing-class-docstring
+# pylint:disable=missing-function-docstring
+# pylint:disable=too-many-ancestors
+# pylint:disable=too-many-arguments
+
+import codecs
+import random
+import os
+import re
+
 from supybot import callbacks
 from supybot.commands import wrap
 try:
@@ -36,28 +47,24 @@ except ImportError:
     def _(x):
         return x
 
-import codecs
-import random
-import os
-import re
-
 
 class Funk(callbacks.Plugin):
     '''A collection of useless fun commands'''
     threaded = True
 
     def _randline(self, fn):
-        with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data', fn)) as fh:
+        filepath = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data', fn)
+        with open(filepath, encoding='utf-8') as fh:
             return random.sample(fh.read().splitlines(), 1)[0]
 
     @wrap
-    def bofh(self, irc, msg, args):
+    def bofh(self, irc, msg, _args):
         '''BOFH (Bastard Operator From Hell) excuse generator
         '''
         irc.reply(self._randline('bofh.txt'), prefixNick=self.registryValue('prefixNick', msg.channel, irc.network))
 
     @wrap
-    def chuck(self, irc, msg, args):
+    def chuck(self, irc, msg, _args):
         '''Tells a Chuck Norris joke
         '''
         irc.reply(self._randline('chuck.txt'), prefixNick=self.registryValue('prefixNick', msg.channel, irc.network))
@@ -65,7 +72,7 @@ class Funk(callbacks.Plugin):
     @wrap([
         'text',
     ])
-    def rot13(self, irc, msg, args, text):
+    def rot13(self, irc, msg, _args, text):
         '''<text>
         Encode text with ROT13
         '''
@@ -74,7 +81,7 @@ class Funk(callbacks.Plugin):
     @wrap([
         'text',
     ])
-    def unrot13(self, irc, msg, args, text):
+    def unrot13(self, irc, msg, _args, text):
         '''<text>
         Decode ROT13 text
         '''
@@ -100,8 +107,8 @@ class Funk(callbacks.Plugin):
 
         if capital:
             return word[:1].upper() + word[1:]
-        else:
-            return word
+
+        return word
 
     def _unpigword(self, word):
         capital = False
@@ -125,13 +132,13 @@ class Funk(callbacks.Plugin):
 
         if capital:
             return word[:1].upper() + word[1:]
-        else:
-            return word
+
+        return word
 
     @wrap([
         'text',
     ])
-    def pig(self, irc, msg, args, text):
+    def pig(self, irc, msg, _args, text):
         '''<text>
         Convert text from English to Pig Latin.
         '''
@@ -142,7 +149,7 @@ class Funk(callbacks.Plugin):
     @wrap([
         'text'
     ])
-    def unpig(self, irc, msg, args, text):
+    def unpig(self, irc, msg, _args, text):
         '''<text>
         Convert text from Pig Latin to English.
         '''

@@ -27,6 +27,16 @@
 # POSSIBILITY OF SUCH DAMAGE.
 ###
 
+# pylint:disable=missing-module-docstring
+# pylint:disable=missing-class-docstring
+# pylint:disable=missing-function-docstring
+# pylint:disable=wrong-import-order
+# pylint:disable=broad-exception-caught
+# pylint:disable=too-many-ancestors
+# pylint:disable=too-many-branches
+# pylint:disable=too-many-arguments
+# pylint:disable=inconsistent-return-statements
+
 from supybot import callbacks, ircdb, ircmsgs, ircutils, utils
 from supybot.commands import ProcessTimeoutError, process
 import re
@@ -145,16 +155,19 @@ class Sedster(callbacks.PluginRegexp):
     # Sedster main routine.
     # This is called automatically by callbacks.PluginRegexp on every message that matches the SEDSTER_REGEXP regexp.
     # The actual regexp is passed into PluginRegexp by setting `__doc__` on the hook method.
-    def sedster_hook(self, irc, msg, regex):
+    def sedster_hook(self, irc, msg, _regex):
         if not self.registryValue('enable', msg.channel, irc.network):
             return
 
         try:
-            pattern, replacement, count, flags = self._parse_regexp(msg.args[1])
+            pattern, replacement, count, _flags = self._parse_regexp(msg.args[1])
         except Exception as e:
             self.log.error(_('Sedster parser error: %s'), e, exc_info=True)
+
             if self.registryValue('displayErrors', msg.channel, irc.network):
-                irc.error('%s.%s: %s' % (e.__class__.__module__, e.__class__.__name__, e))
+                errmsg = f'{e.__class__.__module__}:{e.__class__.__name__}: {e}'
+                irc.error(errmsg)
+
             return
 
         history = reversed(irc.state.history)
@@ -175,22 +188,22 @@ class Sedster(callbacks.PluginRegexp):
             )
         except ProcessTimeoutError as e:
             errmsg = _('Search timed out.')
-
             self.log.error(errmsg, e, exc_info=True)
+
             if self.registryValue('displayErrors', msg.channel, irc.network):
                 irc.error(errmsg)
         except SearchNotFoundError as e:
             errmsg = _('Search not found in the last %i IRC messages on this network') % (len(irc.state.history))
-
             self.log.error(errmsg, e, exc_info=True)
+
             if self.registryValue('displayErrors', msg.channel, irc.network):
                 irc.error(errmsg)
         except Exception as e:
-            errmsg = '%s.%s: %s' % (e.__class__.__module__, e.__class__.__name__, e)
-
+            errmsg = f'{e.__class__.__module__}:{e.__class__.__name__}: {e}'
             self.log.error(errmsg, e, exc_info=True)
+
             if self.registryValue('displayErrors', msg.channel, irc.network):
-                irc.error('%s.%s: %s' % (e.__class__.__module__, e.__class__.__name__, e))
+                irc.error(errmsg)
         else:
             irc.reply(message, prefixNick=False)
 

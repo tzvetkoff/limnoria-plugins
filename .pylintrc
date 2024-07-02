@@ -1,0 +1,11 @@
+[FORMAT]
+max-line-length = 120
+
+
+[STRING]
+check-quote-consistency = yes
+
+[BASIC]
+module-naming-style = any
+method-naming-style = any
+function-naming-style = any

@@ -2,6 +2,12 @@
 
 Fetches crypto currency prices from https://rate.sx/.
 
+## Configuration
+
+| Property                   | Description                                                    |
+| -------------------------- | -------------------------------------------------------------- |
+| **plugins.ratesx.timeout** | Fetch timeout in seconds.  Network-specific, channel-specific. |
+
 ## Usage
 
 ```

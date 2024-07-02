@@ -27,7 +27,12 @@
 # POSSIBILITY OF SUCH DAMAGE.
 ###
 
-# pylama:ignore=W0401
+# pylint:disable=missing-module-docstring
+# pylint:disable=missing-class-docstring
+# pylint:disable=missing-function-docstring
+# pylint:disable=wildcard-import
+# pylint:disable=unused-wildcard-import
+# pylint:disable=redefined-builtin
 
 import unittest
 from supybot.test import *
@@ -161,7 +166,7 @@ class SedsterTestCase(ChannelPluginTestCase):
     @unittest.skipIf(world.disableMultiprocessing, 'Test requires multiprocessing to be enabled')
     def testReDoSTimeout(self):
         # From https://snyk.io/blog/redos-and-catastrophic-backtracking/
-        for idx in range(500):
+        for _ in range(500):
             self.feedMsg('ACCCCCCCCCCCCCCCCCCCCCCCCCCCCX')
         self.feedMsg(r's/A(B|C+)+D/this should abort/')
         m = self.getMsg(' ', timeout=1)

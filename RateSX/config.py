@@ -27,8 +27,13 @@
 # POSSIBILITY OF SUCH DAMAGE.
 ###
 
+# pylint:disable=missing-module-docstring
+# pylint:disable=missing-function-docstring
+# pylint:disable=import-outside-toplevel
+# pylint:disable=broad-exception-caught
 
-from supybot import conf
+from supybot import conf, registry
+
 try:
     from supybot.i18n import PluginInternationalization
     _ = PluginInternationalization('RateSX')
@@ -45,5 +50,11 @@ def configure(advanced):
 
 
 RateSX = conf.registerPlugin('RateSX')
+
+conf.registerChannelValue(
+    RateSX,
+    'timeout',
+    registry.Float(5.0, _('Fetch timeout in seconds')),
+)
 
 # vim:ft=python:ts=4:sts=4:sw=4:et:tw=119

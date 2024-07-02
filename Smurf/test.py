@@ -27,28 +27,36 @@
 # POSSIBILITY OF SUCH DAMAGE.
 ###
 
-# pylama:ignore=W0401
+# pylint:disable=missing-module-docstring
+# pylint:disable=missing-class-docstring
+# pylint:disable=missing-function-docstring
+# pylint:disable=wildcard-import
+# pylint:disable=unused-wildcard-import
+# pylint:disable=redefined-builtin
 
 from supybot.test import *
 
 
 class SmurfTestCase(PluginTestCase):
     plugins = ('Smurf',)
-    config = {'plugins.smurf.enable': True,
-              'plugins.smurf.reportErrors': True,
-              'plugins.smurf.smurfMultipleURLs': True,
-              # 'plugins.smurf.ignoreUrlRegexp': r'porn',
-              'plugins.smurf.timeout': 5}
+    config = {
+        'plugins.smurf.enable': True,
+        'plugins.smurf.timeout': 5.0,
+        'plugins.smurf.reportErrors': True,
+        'plugins.smurf.showRedirectChain': True,
+        'plugins.smurf.smurfMultipleURLs': True,
+        # 'plugins.smurf.ignoreUrlRegexp': r'/porn/',
+    }
     timeout = 10
 
     @unittest.skipUnless(network, 'smurf tests require networking')
     def testSmurf(self):
-        ignoreUrlRegexpVar = conf.supybot.plugins.smurf.ignoreUrlRegexp
+        ignore_url_regexp_var = conf.supybot.plugins.smurf.ignoreUrlRegexp
 
         try:
-            ignoreUrlRegexpVar.set(r'/porn/')
+            ignore_url_regexp_var.set(r'/porn/')
             self.assertRegexp('smurf http://pfoo.org/', r'^>> pfoo! \(at pfoo.org\)$')
         finally:
-            ignoreUrlRegexpVar.set(None)
+            ignore_url_regexp_var.set(None)
 
 # vim:ft=python:ts=4:sts=4:sw=4:et:tw=119

@@ -27,6 +27,17 @@
 # POSSIBILITY OF SUCH DAMAGE.
 ###
 
+# pylint:disable=missing-module-docstring
+# pylint:disable=missing-class-docstring
+# pylint:disable=missing-function-docstring
+# pylint:disable=too-many-ancestors
+
+import random
+import datetime
+import re
+import json
+import requests
+
 from supybot import callbacks, ircmsgs
 from supybot.commands import wrap
 try:
@@ -36,12 +47,6 @@ except ImportError:
     def _(x):
         return x
 
-import random
-import datetime
-import re
-import json
-import requests
-
 
 class Cayman(callbacks.Plugin):
     '''Displays cat gifs or facts in channels'''
@@ -49,29 +54,35 @@ class Cayman(callbacks.Plugin):
     threaded = True
     last_message_timestamp = False
 
-    def _gif(self):
-        response = requests.get('http://edgecats.net/random')
+    def _gif(self, channel, network):
+        response = requests.get('http://edgecats.net/random', timeout=self.registryValue('timeout', channel, network))
         return response.text.replace('http://', 'https://')
 
-    def _fact(self):
-        response = requests.get('https://catfact.ninja/fact')
+    def _fact(self, channel, network):
+        response = requests.get('https://catfact.ninja/fact', timeout=self.registryValue('timeout', channel, network))
         data = json.loads(response.text)
         return data['fact']
 
     def _match(self, message, channel, network):
         words = [word.strip() for word in self.registryValue('triggerWords', channel, network)]
         pattern = re.compile(r'\b(' + '|'.join(words) + r')\b', re.IGNORECASE)
-        return not not pattern.search(message)
+        return pattern.search(message)
 
     @wrap
-    def catgif(self, irc, msg, args):
+    def catgif(self, irc, msg, _args):
         '''Gets a random cat gif'''
-        irc.reply(self._gif(), prefixNick=self.registryValue('prefixNick', msg.channel, irc.network))
+        irc.reply(
+            self._gif(msg.channel, irc.network),
+            prefixNick=self.registryValue('prefixNick', msg.channel, irc.network)
+        )
 
     @wrap
-    def catfact(self, irc, msg, args):
+    def catfact(self, irc, msg, _args):
         '''Gets a random cat fact'''
-        irc.reply(self._fact(), prefixNick=self.registryValue('prefixNick', msg.channel, irc.network))
+        irc.reply(
+            self._fact(msg.chnnel, irc.network),
+            prefixNick=self.registryValue('prefixNick', msg.channel, irc.network)
+        )
 
     def doPrivmsg(self, irc, msg):
         if not msg.channel:
@@ -102,9 +113,9 @@ class Cayman(callbacks.Plugin):
         fact_rand = random.randrange(1, 101) <= fact_chance
 
         if link_rand:
-            irc.reply(self._gif(), prefixNick=False)
+            irc.reply(self._gif(msg.channel, irc.network), prefixNick=False)
         elif fact_rand:
-            irc.reply(self._fact(), prefixNick=False)
+            irc.reply(self._fact(msg.channel, irc.network), prefixNick=False)
 
 
 Class = Cayman

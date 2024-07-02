@@ -27,6 +27,12 @@
 # POSSIBILITY OF SUCH DAMAGE.
 ###
 
+# pylint:disable=missing-module-docstring
+# pylint:disable=missing-class-docstring
+# pylint:disable=missing-function-docstring
+# pylint:disable=too-many-ancestors
+# pylint:disable=too-many-arguments
+
 from supybot import callbacks
 from supybot.commands import optional, wrap
 try:
@@ -49,7 +55,7 @@ class RateSX(callbacks.Plugin):
         optional(('literal', {'to', 'TO', 'in', 'IN', '=>'})),
         optional('somethingWithoutSpaces'),
     ])
-    def rate(self, irc, msg, args, count, currency, _, target):
+    def rate(self, irc, msg, _args, count, currency, _, target):
         '''[count] <currency> [to [target currency]]
 
         Fetches crypto currency's price from https://rate.sx/
@@ -62,12 +68,17 @@ class RateSX(callbacks.Plugin):
         currency = currency.upper()
         target = target.upper()
 
-        response = str(get(f'https://{target}.rate.sx/{count}{currency}').text)
+        url = f'https://{target}.rate.sx/{count}{currency}'
+        timeout = self.registryValue('timeout', msg.channel, irc.network)
+
+        response = str(get(url, timeout=timeout).text)
         response = response.strip()
         response = response.strip('\'')
+
         if 'ERROR:' in response:
             irc.reply(response)
             return
+
         irc.reply(f'{count} {currency} = {response} {target}')
 
 

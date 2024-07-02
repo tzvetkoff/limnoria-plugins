@@ -27,6 +27,8 @@
 # POSSIBILITY OF SUCH DAMAGE.
 ###
 
+# pylint:disable=deprecated-module
+
 '''
 Smurf: Fetches URL titles
 '''

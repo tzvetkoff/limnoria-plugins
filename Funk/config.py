@@ -27,9 +27,12 @@
 # POSSIBILITY OF SUCH DAMAGE.
 ###
 
+# pylint:disable=missing-module-docstring
+# pylint:disable=missing-function-docstring
+# pylint:disable=import-outside-toplevel
+# pylint:disable=broad-exception-caught
 
-from supybot import conf
-import supybot.registry as registry
+from supybot import conf, registry
 
 try:
     from supybot.i18n import PluginInternationalization

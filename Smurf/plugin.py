@@ -27,13 +27,20 @@
 # POSSIBILITY OF SUCH DAMAGE.
 ###
 
-# pylama:ignore=C901
+# pylint:disable=missing-module-docstring
+# pylint:disable=missing-class-docstring
+# pylint:disable=missing-function-docstring
+# pylint:disable=too-many-ancestors
+# pylint:disable=too-many-branches
+# pylint:disable=broad-exception-caught
 
+import re
+import sys
+from time import time
 from html.entities import entitydefs
 from urllib.parse import urlunparse
-import re
 import requests
-from time import time
+
 from supybot import conf, utils, ircmsgs, callbacks
 from supybot.commands import wrap
 
@@ -62,80 +69,78 @@ class Smurf(callbacks.Plugin):
         else:
             text = msg.args[1]
 
-        ignoreUrlRe = self.registryValue('ignoreUrlRegexp', msg.channel, irc.network)
-        if ignoreUrlRe:
+        ignore_url_re = self.registryValue('ignoreUrlRegexp', msg.channel, irc.network)
+        if ignore_url_re:
             try:
-                ignoreUrlRe = re.compile(ignoreUrlRe)
+                ignore_url_re = re.compile(ignore_url_re)
             except Exception:
-                ignoreUrlRe = None
+                ignore_url_re = None
 
-        reportErrors = self.registryValue('reportErrors', msg.channel, irc.network)
-        smurfMultipleURLs = self.registryValue('smurfMultipleUrls', msg.channel, irc.network)
+        report_errors = self.registryValue('reportErrors', msg.channel, irc.network)
+        show_redirect_chain = self.registryValue('showRedirectChain', msg.channel, irc.network)
+        smurf_multiple_urls = self.registryValue('smurfMultipleUrls', msg.channel, irc.network)
 
         for url in utils.web.httpUrlRe.findall(text):
-            if ignoreUrlRe and ignoreUrlRe.search(url):
+            if ignore_url_re and ignore_url_re.search(url):
                 continue
 
             try:
-                result = self.getTitle(irc, msg, url)
-                if result:
-                    (title, domain) = result
-
+                title, domain = self.getTitle(irc, msg, url, show_redirect_chain)
+                if title and domain:
                     irc.reply(_('>> %s (at %s)') % (title, domain), prefixNick=False)
             except SmurfException as e:
-                if reportErrors:
+                if report_errors:
                     irc.reply(_('!! Error fetching title for %s: %s') % (e.domain, e.message), prefixNick=False)
 
-            if not smurfMultipleURLs:
+            if not smurf_multiple_urls:
                 break
 
     @wrap([
         'url',
     ])
-    def smurf(self, irc, msg, args, url):
+    def smurf(self, irc, msg, _args, url):
         '''<url>
 
         Fetch title from URL
         '''
 
-        reportErrors = self.registryValue('reportErrors', msg.channel, irc.network)
+        show_redirect_chain = self.registryValue('showRedirectChain', msg.channel, irc.network)
+        report_errors = self.registryValue('reportErrors', msg.channel, irc.network)
 
         try:
-            result = self.getTitle(irc, msg, url)
+            result = self.getTitle(irc, msg, url, show_redirect_chain)
             if result:
                 (title, domain) = result
                 irc.reply(_('>> %s (at %s)') % (title, domain))
             else:
                 irc.reply(_('!! No title found'))
         except SmurfException as e:
-            if reportErrors:
+            if report_errors:
                 irc.reply(_('!! Error fetching title for %s: %s') % (e.domain, e.message))
-
-        pass
 
     def getEncoding(self, text):
         try:
-            match = re.search(utils.web._charset_re, text, re.MULTILINE)
+            match = re.search(utils.web._charset_re, text, re.MULTILINE)    # pylint:disable=protected-access
             if match:
                 return match.group('charset')[1:-1]
-        except:  # noqa
-            match = re.search(utils.web._charset_re.encode(), text, re.MULTILINE)
+        except Exception:
+            match = re.search(utils.web._charset_re.encode(), text, re.MULTILINE)   # pylint:disable=protected-access
             if match:
                 return match.group('charset').decode()[1:-1]
 
         try:
-            import charset_normalizer
+            import charset_normalizer   # pylint:disable=import-outside-toplevel
             result = charset_normalizer.detect(text)
             return result['encoding']
-        except:  # noqa
+        except Exception:
             return None
 
-    def getTitle(self, irc, msg, url):
+    def getTitle(self, irc, msg, url, show_redirect_chain): # pylint:disable=too-many-locals,too-many-statements
         # Some things stolen from:
         #   https://github.com/progval/Limnoria/blob/master/plugins/Web/plugin.py
         #   https://github.com/impredicative/urltitle/blob/master/urltitle/config/overrides.py
         max_size = conf.supybot.protocols.http.peekSize()
-        timeout = self.registryValue('timeout')
+        timeout = self.registryValue('timeout', msg.channel, irc.network)
         headers = conf.defaultHttpHeaders(irc.network, msg.channel)
 
         parsed_url = utils.web.urlparse(url)
@@ -177,20 +182,28 @@ class Smurf(callbacks.Plugin):
 
                 try:
                     text = text.decode(self.getEncoding(text) or 'utf8', 'replace')
-                except UnicodeDecodeError:
+                except UnicodeDecodeError as e:
                     self.log.error(_('Smurf: URL <%s> - Cannot guess encoding'), url)
-                    raise SmurfException(parsed_url.netloc, _('Cannot guess encoding'))
+                    raise SmurfException(parsed_url.netloc, _('Cannot guess encoding')) from e
         except SmurfException:
             raise
         except Exception as e:
             self.log.error(_('Smurf: URL <%s> raised <%s>'), url, str(e))
-            raise SmurfException(parsed_url.netloc, str(e))
+            raise SmurfException(parsed_url.netloc, str(e)) from e
+
+        if show_redirect_chain and sys.version_info >= (3, 4):
+            try:
+                redirect_chain = [utils.web.urlparse(site.url).netloc for site in response.history]
+                redirect_chain = list(dict.fromkeys(redirect_chain))
+                netloc = ' -> '.join(redirect_chain)
+            except Exception:
+                pass
 
         try:
             parser = SmurfParser(parsed_url.netloc)
             parser.feed(text)
         except Exception as e:
-            raise SmurfException(parsed_url.netloc, str(e))
+            raise SmurfException(parsed_url.netloc, str(e)) from e
         finally:
             parser.close()
 
@@ -199,6 +212,7 @@ class Smurf(callbacks.Plugin):
             return (title, netloc)
 
         # Quietly weep...
+        return (None, None)
 
 
 class SmurfParser(utils.web.HtmlToText):
@@ -221,25 +235,25 @@ class SmurfParser(utils.web.HtmlToText):
     def inside_html_title(self):
         return self.inside_title_tag and not self.inside_svg_tag
 
-    def handle_starttag(self, tag, attrs):
+    def handle_starttag(self, tag, attr):
         if tag == 'title':
             self.inside_title_tag = True
         elif tag == 'svg':
             self.inside_svg_tag = True
         elif tag == 'meta' and self.netloc in ('twitter.com'):
-            attrs = dict(attrs)
+            attr = dict(attr)
 
-            if not 'property' in attrs or not 'content' in attrs:
+            if 'property' not in attr or 'content' not in attr:
                 return
 
-            if attrs['property'] == 'og:title':
-                self.og_title = attrs['content']
-            elif attrs['property'] == 'og:description':
-                self.og_description = attrs['content']
-            elif attrs['property'] == 'og:video':
-                self.og_video = attrs['content']
-            elif attrs['property'] == 'og:image':
-                self.og_image = attrs['content']
+            if attr['property'] == 'og:title':
+                self.og_title = attr['content']
+            elif attr['property'] == 'og:description':
+                self.og_description = attr['content']
+            elif attr['property'] == 'og:video':
+                self.og_video = attr['content']
+            elif attr['property'] == 'og:image':
+                self.og_image = attr['content']
 
     def handle_endtag(self, tag):
         if tag == 'title':
@@ -255,7 +269,7 @@ class SmurfParser(utils.web.HtmlToText):
         if self.netloc in ('twitter.com'):
             if self.og_video:
                 return f'{self.og_title}: {self.og_description} - {self.og_video}'
-            elif self.og_image:
+            if self.og_image:
                 return f'{self.og_title}: {self.og_description} - {self.og_image}'
 
             return f'{self.og_title}: {self.og_description}'
