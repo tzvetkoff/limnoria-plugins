@@ -80,7 +80,7 @@ class Cayman(callbacks.Plugin):
     def catfact(self, irc, msg, _args):
         '''Gets a random cat fact'''
         irc.reply(
-            self._fact(msg.chnnel, irc.network),
+            self._fact(msg.channel, irc.network),
             prefixNick=self.registryValue('prefixNick', msg.channel, irc.network)
         )
 
