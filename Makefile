@@ -27,6 +27,15 @@ help:
 
 
 ##
+##@ Runtime
+##
+
+## Install runtime dependencies
+deps:
+	pip install $$(cat $(CURDIR)/**/requirements.txt | sort | uniq)
+
+
+##
 ##@ Testing
 ##
 
