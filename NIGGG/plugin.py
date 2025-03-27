@@ -116,6 +116,7 @@ class NIGGG(callbacks.Plugin):
             pass
 
     @wrap([
+        'admin',
         ('literal', {'start', 'stop', 'restart', 'refresh'}),
     ])
     def scheduler(self, _irc, _msg, _args, op):
