@@ -60,7 +60,7 @@ conf.registerChannelValue(
     NIGGG,
     'messageFormat',
     registry.String(
-        _('Earthquake - Magnitude {mag} at coordinates {lat}N,{lon}E ({time}, {label})'),
+        _('Earthquake with magnitude {mag} at coordinates {lat}N,{lon}E ({time}, {label})'),
         _('Earthquake alert message format'),
     )
 )
