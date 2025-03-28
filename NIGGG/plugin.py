@@ -56,7 +56,7 @@ AnnouncedFilename = conf.supybot.directories.data.dirize('NIGGG.flat')
 
 
 class NIGGG(callbacks.Plugin):
-    '''Fetches and announces earthquakes from https://ndc.niggg.bas.bg/'''
+    '''Sends notifications about earthquakes around Bulgaria, data from https://ndc.niggg.bas.bg/'''
     threaded = True
     job_scheduler = None
 

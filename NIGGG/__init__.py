@@ -32,7 +32,7 @@
 # pyright:reportUnusedImport=none
 
 '''
-NIGGG: Fetches and announces earthquakes from https://ndc.niggg.bas.bg/
+NIGGG: Sends notifications about earthquakes around Bulgaria, data from https://ndc.niggg.bas.bg/
 '''
 
 import sys
