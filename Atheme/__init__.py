@@ -28,6 +28,8 @@
 ###
 
 # pylint:disable=deprecated-module
+# pyright:reportUnreachable=none
+# pyright:reportUnusedImport=none
 
 '''
 Atheme: Atheme services integration

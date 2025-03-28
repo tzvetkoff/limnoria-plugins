@@ -1,6 +1,6 @@
 # RateSX
 
-Fetches crypto currency prices from https://rate.sx/.
+Fetches crypto currency rates from https://rate.sx/.
 
 ## Configuration
 

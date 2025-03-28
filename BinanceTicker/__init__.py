@@ -28,9 +28,11 @@
 ###
 
 # pylint:disable=deprecated-module
+# pyright:reportUnreachable=none
+# pyright:reportUnusedImport=none
 
 '''
-RateSX: Fetches crypto currency prices from https://rate.sx/
+BinanceTicker: Fetches crypto currency rates from Binance Ticker API
 '''
 
 import sys

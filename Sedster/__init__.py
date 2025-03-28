@@ -28,6 +28,8 @@
 ###
 
 # pylint:disable=deprecated-module
+# pyright:reportUnreachable=none
+# pyright:reportUnusedImport=none
 
 '''
 Sedster: Replaces messages with sed-style regular expressions

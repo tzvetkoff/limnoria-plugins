@@ -27,6 +27,10 @@
 # POSSIBILITY OF SUCH DAMAGE.
 ###
 
+# pylint:disable=deprecated-module
+# pyright:reportUnreachable=none
+# pyright:reportUnusedImport=none
+
 '''
 Gitea: Gitea webhooks integration
 '''

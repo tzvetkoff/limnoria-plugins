@@ -28,6 +28,8 @@
 ###
 
 # pylint:disable=deprecated-module
+# pyright:reportUnreachable=none
+# pyright:reportUnusedImport=none
 
 '''
 Funk: A collection of useless fun commands

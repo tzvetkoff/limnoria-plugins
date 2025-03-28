@@ -28,6 +28,8 @@
 ###
 
 # pylint:disable=deprecated-module
+# pyright:reportUnreachable=none
+# pyright:reportUnusedImport=none
 
 '''
 NIGGG: Fetches and announces earthquakes from https://ndc.niggg.bas.bg/

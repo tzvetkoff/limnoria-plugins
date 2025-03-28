@@ -46,7 +46,7 @@ from requests import get
 
 
 class RateSX(callbacks.Plugin):
-    '''Fetches crypto currency prices from rate.sx'''
+    '''Fetches crypto currency rates from rate.sx'''
     threaded = True
 
     @wrap([

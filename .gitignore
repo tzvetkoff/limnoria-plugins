@@ -1,3 +1,6 @@
+/.vscode
+/tmp
+/typings
 /**/__pycache__
 /test-conf
 /test-data

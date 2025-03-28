@@ -47,7 +47,7 @@ except ImportError:
 
 
 class BinanceTicker(callbacks.Plugin):
-    '''Fetches crypto currency prices from Binance's ticker'''
+    '''Fetches crypto currency rates from Binance Ticker API'''
     threaded = True
 
     @wrap([

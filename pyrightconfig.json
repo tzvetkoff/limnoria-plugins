@@ -1,0 +1,14 @@
+{
+    "reportAny": "none",
+    "reportImplicitOverride": "none",
+    "reportMissingParameterType": "none",
+    "reportUnannotatedClassAttribute": "none",
+    "reportUnknownArgumentType": "none",
+    "reportUnknownLambdaType": "none",
+    "reportUnknownMemberType": "none",
+    "reportUnknownParameterType": "none",
+    "reportUnknownVariableType": "none",
+    "reportUntypedClassDecorator": "none",
+    "reportUntypedFunctionDecorator": "none",
+    "reportUnusedCallResult": "none"
+}

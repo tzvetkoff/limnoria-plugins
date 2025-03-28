@@ -1,6 +1,6 @@
 # BinanceTicker
 
-Fetches crypto currency prices using Binance's ticker API.
+Fetches crypto currency rates using Binance Ticker API.
 
 ## Configuration
 
