@@ -39,7 +39,7 @@ import sys
 import supybot
 from supybot import world
 
-__version__ = '2024.01.07'
+__version__ = '2025.01.07'
 __author__ = supybot.Author('Latchezar Tzvetkoff', 'Polizei', 'latchezar@tzvetkoff.net')
 __contributors__ = {}
 __url__ = 'https://github.com/tzvetkoff/limnoria-plugins'
