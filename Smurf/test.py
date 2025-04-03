@@ -37,7 +37,7 @@
 from supybot.test import *
 
 
-class SmurfTestCase(PluginTestCase):
+class SmurfTestCase(ChannelPluginTestCase):
     plugins = ('Smurf',)
     config = {
         'plugins.smurf.enable': True,
@@ -47,7 +47,7 @@ class SmurfTestCase(PluginTestCase):
         'plugins.smurf.smurfMultipleURLs': True,
         # 'plugins.smurf.ignoreUrlRegexp': r'/porn/',
     }
-    timeout = 10
+    timeout = 5
 
     @unittest.skipUnless(network, 'smurf tests require networking')
     def testSmurf(self):
@@ -55,8 +55,14 @@ class SmurfTestCase(PluginTestCase):
 
         try:
             ignore_url_regexp_var.set(r'/porn/')
-            self.assertRegexp('smurf http://pfoo.org/', r'^>> pfoo! \(at pfoo.org\)$')
+            self.assertRegexp('smurf https://pfoo.org/', r'^>> pfoo! \(at pfoo.org\)$')
         finally:
             ignore_url_regexp_var.set(None)
+
+    @unittest.skipUnless(network, 'smurf tests require networking')
+    def testChannelMessage(self):
+        self.feedMsg('https://pfoo.org/,')
+        m = self.getMsg(' ')
+        self.assertIn('>> pfoo! (at pfoo.org)', str(m))
 
 # vim:ft=python:ts=4:sts=4:sw=4:et:tw=119

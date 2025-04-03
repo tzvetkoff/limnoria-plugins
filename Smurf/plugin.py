@@ -33,12 +33,13 @@
 # pylint:disable=too-many-ancestors
 # pylint:disable=too-many-branches
 # pylint:disable=broad-exception-caught
+# pyright:reportPrivateUsage=false
 
 import re
 import sys
 from time import time
 from html.entities import entitydefs
-from urllib.parse import urlunparse
+from urllib.parse import urlparse, urlunparse
 import requests
 
 from supybot import conf, utils, ircmsgs, callbacks
@@ -81,6 +82,9 @@ class Smurf(callbacks.Plugin):
         smurf_multiple_urls = self.registryValue('smurfMultipleUrls', msg.channel, irc.network)
 
         for url in utils.web.httpUrlRe.findall(text):
+            if url.endswith(','):
+                url = url[:-1]
+
             if ignore_url_re and ignore_url_re.search(url):
                 continue
 
@@ -143,7 +147,7 @@ class Smurf(callbacks.Plugin):
         timeout = self.registryValue('timeout', msg.channel, irc.network)
         headers = conf.defaultHttpHeaders(irc.network, msg.channel)
 
-        parsed_url = utils.web.urlparse(url)
+        parsed_url = urlparse(url)
         netloc = parsed_url.netloc
 
         if parsed_url.netloc in ('youtube.com', 'youtu.be') or parsed_url.netloc.endswith(('.youtube.com')):
@@ -193,14 +197,15 @@ class Smurf(callbacks.Plugin):
 
         if show_redirect_chain and sys.version_info >= (3, 4):
             try:
-                redirect_chain = [utils.web.urlparse(site.url).netloc for site in response.history]
+                redirect_chain = [urlparse(site.url).netloc for site in response.history]
                 redirect_chain = list(dict.fromkeys(redirect_chain))
+                redirect_chain.append(urlparse(response.url).netloc)
                 netloc = ' -> '.join(redirect_chain)
             except Exception:
                 pass
 
+        parser = SmurfParser(parsed_url.netloc)
         try:
-            parser = SmurfParser(parsed_url.netloc)
             parser.feed(text)
         except Exception as e:
             raise SmurfException(parsed_url.netloc, str(e)) from e
