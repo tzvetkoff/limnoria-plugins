@@ -188,7 +188,7 @@ class Funk(callbacks.Plugin):
                 result += roman_digit * times
 
             irc.reply(f'{text} => {result}', prefixNick=self.registryValue('prefixNick', msg.channel, irc.network))
-        elif re.match(r'^M{0,3}(CM|CD|D?C{0,3})?(XC|XL|L?X{0,3})?(IX|IV|V?I{0,3})?$', text):
+        elif re.match(r'^M{0,3}(CM|CD|D?C{0,3})?(XC|XL|L?X{0,3})?(IX|IV|V?I{0,3})?$', text, re.IGNORECASE):
             value_map = {
                 'I': 1,
                 'V': 5,
@@ -202,6 +202,7 @@ class Funk(callbacks.Plugin):
             result = 0
             last_digit_value = 0
 
+            text = text.upper()
             for roman_digit in text[::-1]:
                 digit_value = value_map[roman_digit]
 
