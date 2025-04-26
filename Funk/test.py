@@ -40,6 +40,18 @@ from supybot.test import *
 class FunkTestCase(PluginTestCase):
     plugins = ('Funk',)
 
+    def testFunkRot13(self):
+        self.assertRegexp('rot13 the quick brown fox jumps over the lazy dog',
+                          r'gur dhvpx oebja sbk whzcf bire gur ynml qbt')
+        self.assertRegexp('rot13 The Quick Brown Fox Jumps Over The Lazy Dog',
+                          r'Gur Dhvpx Oebja Sbk Whzcf Bire Gur Ynml Qbt')
+
+    def testFunkUnrot13(self):
+        self.assertRegexp('unrot13 gur dhvpx oebja sbk whzcf bire gur ynml qbt',
+                          r'the quick brown fox jumps over the lazy dog')
+        self.assertRegexp('unrot13 Gur Dhvpx Oebja Sbk Whzcf Bire Gur Ynml Qbt',
+                          r'The Quick Brown Fox Jumps Over The Lazy Dog')
+
     def testFunkPig(self):
         self.assertRegexp('pig nix', r'ixnay')
         self.assertRegexp('pig Nix', r'Ixnay')
@@ -68,16 +80,8 @@ class FunkTestCase(PluginTestCase):
         self.assertRegexp('unpig Hetay Uickqay Rownbay Oxfay Umpsjay Overyay Hetay Azylay Ogday',
                           r'The Quick Brown Fox Jumps Over The Lazy Dog')
 
-    def testFunkRot13(self):
-        self.assertRegexp('rot13 the quick brown fox jumps over the lazy dog',
-                          r'gur dhvpx oebja sbk whzcf bire gur ynml qbt')
-        self.assertRegexp('rot13 The Quick Brown Fox Jumps Over The Lazy Dog',
-                          r'Gur Dhvpx Oebja Sbk Whzcf Bire Gur Ynml Qbt')
-
-    def funkUnrot13(self):
-        self.assertRegexp('unrot13 gur dhvpx oebja sbk whzcf bire gur ynml qbt',
-                          r'the quick brown fox jumps over the lazy dog')
-        self.assertRegexp('unrot13 Gur Dhvpx Oebja Sbk Whzcf Bire Gur Ynml Qbt',
-                          r'The Quick Brown Fox Jumps Over The Lazy Dog')
+    def testRoman(self):
+        self.assertRegexp('roman 666', r'666 => DCLXVI')
+        self.assertRegexp('roman DCLXVI', r'DCLXVI => 666')
 
 # vim:ft=python:ts=4:sts=4:sw=4:et:tw=119

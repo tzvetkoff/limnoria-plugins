@@ -32,6 +32,7 @@
 # pylint:disable=missing-function-docstring
 # pylint:disable=too-many-ancestors
 # pylint:disable=too-many-arguments
+# pylint:disable=consider-using-dict-items
 
 import codecs
 import random
@@ -156,6 +157,63 @@ class Funk(callbacks.Plugin):
         words = re.split(r'\s+', text)
         words = [self._unpigword(word) for word in words]
         irc.reply(' '.join(words), prefixNick=self.registryValue('prefixNick', msg.channel, irc.network))
+
+    @wrap([
+        'text'
+    ])
+    def roman(self, irc, msg, _args, text):
+        '''<text>
+        Convert from/to Roman numerals.
+        '''
+        if re.match(r'^\d+$', text):
+            value_map = {
+                1000: 'M',
+                500: 'D',
+                100: 'C',
+                50: 'L',
+                10: 'X',
+                5: 'V',
+                1: 'I',
+            }
+
+            result = ''
+            remainder = int(text)
+
+            for i in value_map:
+                multiplier = i
+                roman_digit = value_map[i]
+
+                times = remainder // multiplier
+                remainder = remainder % multiplier
+                result += roman_digit * times
+
+            irc.reply(f'{text} => {result}', prefixNick=self.registryValue('prefixNick', msg.channel, irc.network))
+        elif re.match(r'^M{0,3}(CM|CD|D?C{0,3})?(XC|XL|L?X{0,3})?(IX|IV|V?I{0,3})?$', text):
+            value_map = {
+                'I': 1,
+                'V': 5,
+                'X': 10,
+                'L': 50,
+                'C': 100,
+                'D': 500,
+                'M': 1000,
+            }
+
+            result = 0
+            last_digit_value = 0
+
+            for roman_digit in text[::-1]:
+                digit_value = value_map[roman_digit]
+
+                if digit_value >= last_digit_value:
+                    result += digit_value
+                    last_digit_value = digit_value
+                else:
+                    result -= digit_value
+
+            irc.reply(f'{text} => {result}', prefixNick=self.registryValue('prefixNick', msg.channel, irc.network))
+        else:
+            irc.reply(f'Error: input \'{text}\' is invalid!')
 
 
 Class = Funk
