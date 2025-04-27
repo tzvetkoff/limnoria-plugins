@@ -166,6 +166,11 @@ class Funk(callbacks.Plugin):
         Convert from/to Roman numerals.
         '''
         if re.match(r'^\d+$', text):
+            number = int(text)
+            if number < 1 or number > 3999:
+                irc.reply(f'Error: input \'{text}\' is invalid!')
+                return
+
             value_map = {
                 1000: 'M',
                 500: 'D',
@@ -177,14 +182,13 @@ class Funk(callbacks.Plugin):
             }
 
             result = ''
-            remainder = int(text)
 
             for i in value_map:
                 multiplier = i
                 roman_digit = value_map[i]
 
-                times = remainder // multiplier
-                remainder = remainder % multiplier
+                times = number // multiplier
+                number = number % multiplier
                 result += roman_digit * times
 
             irc.reply(f'{text} => {result}', prefixNick=self.registryValue('prefixNick', msg.channel, irc.network))
