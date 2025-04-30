@@ -135,9 +135,9 @@ class CertWatch(callbacks.Plugin):
             'days':           time_delta.days,
             'valid':          time_delta.total_seconds() > 0,
             'expired':        time_delta.total_seconds() < 0,
-            'not_before':     cert.not_valid_before_utc,
+            'not_before_dt':  cert.not_valid_before_utc,
             'not_before_str': cert.not_valid_before_utc.strftime('%Y-%m-%d %H:%M:%S %Z'),
-            'not_after':      cert.not_valid_after_utc,
+            'not_after_dt':   cert.not_valid_after_utc,
             'not_after_str':  cert.not_valid_after_utc.strftime('%Y-%m-%d %H:%M:%S %Z'),
         }
 
