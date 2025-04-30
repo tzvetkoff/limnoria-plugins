@@ -46,7 +46,7 @@ def configure(advanced):
     from supybot.questions import output
     conf.registerPlugin('Funk', True)
     if advanced:
-        output('The Funk plugin providers a collection of useless fun commands')
+        output(_('The Funk plugin providers a collection of useless fun commands'))
 
 
 Funk = conf.registerPlugin('Funk')

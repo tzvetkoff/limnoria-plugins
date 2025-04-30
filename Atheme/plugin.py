@@ -36,8 +36,8 @@
 
 from re import search
 
-from supybot import callbacks
-from supybot.commands import ircutils, ircmsgs
+from supybot import callbacks, ircmsgs
+from supybot.commands import ircutils
 try:
     from supybot.i18n import PluginInternationalization
     _ = PluginInternationalization('Atheme')

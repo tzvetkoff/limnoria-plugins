@@ -46,7 +46,7 @@ def configure(advanced):
     from supybot.questions import output
     conf.registerPlugin('Cayman', True)
     if advanced:
-        output('The Cayman plugin displays cat gifs or facts in channels.')
+        output(_('The Cayman plugin displays cat gifs or facts in channels.'))
 
 
 Cayman = conf.registerPlugin('Cayman')

@@ -27,11 +27,21 @@
 # POSSIBILITY OF SUCH DAMAGE.
 ###
 
-from supybot import callbacks, httpserver, ircmsgs, world
-from supybot.commands import wrap
+# pylint:disable=missing-module-docstring
+# pylint:disable=missing-class-docstring
+# pylint:disable=missing-function-docstring
+# pylint:disable=too-many-ancestors
+# pylint:disable=too-many-arguments
+# pylint:disable=bare-except
+# pyright:reportArgumentType=none
+# pyright:reportAttributeAccessIssue=none
+# pyright:reportOperatorIssue=none
+
 import json
 import os
 import time
+from supybot import callbacks, httpserver, ircmsgs, world
+from supybot.commands import wrap
 try:
     from supybot.i18n import PluginInternationalization
     _ = PluginInternationalization('Gitea')
@@ -51,7 +61,6 @@ class GiteaWebhookCallback(httpserver.SupyHTTPServerCallback):
 
     def __init__(self, plugin):
         self.plugin = plugin
-        pass
 
     def flattenDict(self, kv, result=None, memo=None):
         if result is None:

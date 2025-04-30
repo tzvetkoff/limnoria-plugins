@@ -168,7 +168,7 @@ class Funk(callbacks.Plugin):
         if re.match(r'^\d+$', text):
             number = int(text)
             if number < 1 or number > 3999:
-                irc.reply(f'Error: input \'{text}\' is invalid!')
+                irc.reply(f'Error: input "{text}" is invalid!')
                 return
 
             value_map = {
@@ -218,7 +218,7 @@ class Funk(callbacks.Plugin):
 
             irc.reply(f'{text} => {result}', prefixNick=self.registryValue('prefixNick', msg.channel, irc.network))
         else:
-            irc.reply(f'Error: input \'{text}\' is invalid!')
+            irc.reply(f'Error: input "{text}" is invalid!')
 
 
 Class = Funk

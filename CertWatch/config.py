@@ -46,7 +46,7 @@ def configure(advanced):
     from supybot.questions import output
     conf.registerPlugin('CertWatch', True)
     if advanced:
-        output('The CertWatch sends notifications about expiring certificates.')
+        output(_('The CertWatch sends notifications about expiring certificates.'))
 
 
 CertWatch = conf.registerPlugin('CertWatch')

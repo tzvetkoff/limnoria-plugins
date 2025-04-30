@@ -46,7 +46,7 @@ def configure(advanced):
     from supybot.questions import output
     conf.registerPlugin('NIGGG', True)
     if advanced:
-        output('The NIGGG plugin sends notifications about earthquakes around Bulgaria.')
+        output(_('The NIGGG plugin sends notifications about earthquakes around Bulgaria.'))
 
 
 NIGGG = conf.registerPlugin('NIGGG')

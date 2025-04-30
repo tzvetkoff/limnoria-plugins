@@ -46,7 +46,7 @@ def configure(advanced):
     from supybot.questions import output
     conf.registerPlugin('Atheme', True)
     if advanced:
-        output('The Atheme plugin adds integration with Atheme services.')
+        output(_('The Atheme plugin adds integration with Atheme services.'))
 
 
 Atheme = conf.registerPlugin('Atheme')

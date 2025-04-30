@@ -46,7 +46,7 @@ def configure(advanced):
     from supybot.questions import output
     conf.registerPlugin('RateSX', True)
     if advanced:
-        output('The RateSX plugin adds a command to fetch crypto prices from https://rate.sx/')
+        output(_('The RateSX plugin adds a command to fetch crypto prices from https://rate.sx/'))
 
 
 RateSX = conf.registerPlugin('RateSX')

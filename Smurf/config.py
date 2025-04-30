@@ -46,7 +46,7 @@ def configure(advanced):
     from supybot.questions import output
     conf.registerPlugin('Smurf', True)
     if advanced:
-        output('The Smurf fetches URL titles')
+        output(_('The Smurf fetches URL titles'))
 
 
 Smurf = conf.registerPlugin('Smurf')

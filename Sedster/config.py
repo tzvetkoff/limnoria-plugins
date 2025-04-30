@@ -46,7 +46,7 @@ def configure(advanced):
     from supybot.questions import output
     conf.registerPlugin('Sedster', True)
     if advanced:
-        output('The Sedster plugin allows you to make Perl/sed-style regex replacements to your chat history.')
+        output(_('The Sedster plugin allows you to make Perl/sed-style regex replacements to your chat history.'))
 
 
 Sedster = conf.registerPlugin('Sedster')

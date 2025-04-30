@@ -46,7 +46,7 @@ def configure(advanced):
     from supybot.questions import output
     conf.registerPlugin('BinanceTicker', True)
     if advanced:
-        output('The BinanceTicker plugin adds a command to fetch crypto prices from Binance\'s ticker')
+        output(_('The BinanceTicker plugin adds a command to fetch crypto prices from Binance\'s ticker'))
 
 
 BinanceTicker = conf.registerPlugin('BinanceTicker')

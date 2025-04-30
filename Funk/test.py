@@ -84,8 +84,8 @@ class FunkTestCase(PluginTestCase):
         self.assertRegexp('roman 666', r'666 => DCLXVI')
         self.assertRegexp('roman DCLXVI', r'DCLXVI => 666')
         self.assertRegexp('roman dclxvi', r'DCLXVI => 666')
-        self.assertRegexp('roman dcl1xvi', r'Input \'dcl1xvi\' is invalid!')
-        self.assertRegexp('roman 0', r'Input \'0\' is invalid!')
-        self.assertRegexp('roman 4000', r'Input \'4000\' is invalid!')
+        self.assertRegexp('roman dcl1xvi', r'Input "dcl1xvi" is invalid!')
+        self.assertRegexp('roman 0', r'Input "0" is invalid!')
+        self.assertRegexp('roman 4000', r'Input "4000" is invalid!')
 
 # vim:ft=python:ts=4:sts=4:sw=4:et:tw=119

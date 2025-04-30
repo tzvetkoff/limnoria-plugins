@@ -27,6 +27,10 @@
 # POSSIBILITY OF SUCH DAMAGE.
 ###
 
+# pylint:disable=missing-module-docstring
+# pylint:disable=missing-function-docstring
+# pylint:disable=import-outside-toplevel
+# pylint:disable=broad-exception-caught
 
 from supybot import conf
 import supybot.registry as registry
@@ -42,7 +46,7 @@ def configure(advanced):
     from supybot.questions import output
     conf.registerPlugin('Gitea', True)
     if advanced:
-        output('Gitea webhooks integration')
+        output(_('Gitea webhooks integration'))
 
 
 Gitea = conf.registerPlugin('Gitea')

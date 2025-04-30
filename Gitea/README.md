@@ -2,6 +2,8 @@
 
 Gitea webhooks integration.
 
+**Abandoned.**
+
 ## Webhooks
 
 Currently known webhooks:
@@ -22,7 +24,7 @@ See the [doc](doc) directory for payload samples, or enable `gitea.debug` and co
 Note that the payload is flattened so this is what you get when the message is constructed.
 
 
-## Message formats.
+## Message formats
 
 Each webhook event has its own configurable message format: `gitea.format.<event>`.
 
