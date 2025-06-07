@@ -10,6 +10,7 @@ Miscellaneous plugins for Limnoria.
 | BinanceTicker | Fetches crypto currency rates from Binance Ticker API                                      |
 | Cayman        | Displays cat gifs or facts in channels                                                     |
 | CertWatch     | Sends notifications about expiring certificates                                            |
+| Feeder        | RSS feed scanner                                                                           |
 | Funk          | A collection of useless fun commands                                                       |
 | NIGGG         | Sends notifications about earthquakes around Bulgaria, data from https://ndc.niggg.bas.bg/ |
 | RateSX        | Fetches crypto currency rates from https://rate.sx/                                        |

@@ -67,7 +67,7 @@ conf.registerChannelValue(
 conf.registerGlobalValue(
     NIGGG,
     'schedule',
-    registry.String('*/5 * * * *', _('Cron schedule when to poll for new data')),
+    registry.String('* * * * *', _('Cron schedule when to poll for new data')),
 )
 conf.registerGlobalValue(
     NIGGG,
