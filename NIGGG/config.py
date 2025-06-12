@@ -1,5 +1,5 @@
 ###
-# Copyright (c) 2024 Latchezar Tzvetkoff
+# Copyright (c) 2025 Latchezar Tzvetkoff
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -62,7 +62,7 @@ conf.registerChannelValue(
     registry.String(
         _('Earthquake with magnitude {mag} at coordinates {lat}N,{lon}E ({time}, {label})'),
         _('Earthquake alert message format'),
-    )
+    ),
 )
 conf.registerGlobalValue(
     NIGGG,

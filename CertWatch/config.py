@@ -1,5 +1,5 @@
 ###
-# Copyright (c) 2024 Latchezar Tzvetkoff
+# Copyright (c) 2025 Latchezar Tzvetkoff
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -65,7 +65,7 @@ conf.registerChannelValue(
     registry.String(
         _('Certificate for {cn} will expire in {days} days! ({not_after_str})'),
         _('Notification message format for certificates expiring in more than 1 day'),
-    )
+    ),
 )
 conf.registerChannelValue(
     CertWatch,
@@ -73,7 +73,7 @@ conf.registerChannelValue(
     registry.String(
         _('Certificate for {cn} will expire tomorrow! ({not_after_str})'),
         _('Notification message format for certificates expiring in 1 day'),
-    )
+    ),
 )
 conf.registerChannelValue(
     CertWatch,
@@ -81,7 +81,7 @@ conf.registerChannelValue(
     registry.String(
         _('Certificate for {cn} will expire today! ({not_after_str})'),
         _('Notification message format for certificates expiring today'),
-    )
+    ),
 )
 conf.registerChannelValue(
     CertWatch,
@@ -89,7 +89,7 @@ conf.registerChannelValue(
     registry.String(
         _('Certificate for {cn} has expired {days} ago! ({not_after_str})'),
         _('Notification message format for expired certificates'),
-    )
+    ),
 )
 conf.registerGlobalValue(
     CertWatch,
