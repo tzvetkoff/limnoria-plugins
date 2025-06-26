@@ -59,7 +59,12 @@ class EMSC(callbacks.Plugin):
         super().__init__(irc)
         self.websocket_start()
 
+    def __del__(self):
+        self.log.info('Received `del` :: Terminating EMSC connection')
+        self.websocket_stop()
+
     def die(self):
+        self.log.info('Received `.die()` :: Terminating EMSC connection')
         self.websocket_stop()
 
     def on_websocket_message(self, _ws, message):

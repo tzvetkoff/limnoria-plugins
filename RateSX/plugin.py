@@ -71,15 +71,17 @@ class RateSX(callbacks.Plugin):
         url = f'https://{target}.rate.sx/{count}{currency}'
         timeout = self.registryValue('timeout', msg.channel, irc.network)
 
-        response = str(get(url, timeout=timeout).text)
-        response = response.strip()
-        response = response.strip('\'')
+        with get(url, timeout=timeout) as response:
+            text = str(response.text)
 
-        if 'ERROR:' in response:
-            irc.reply(response)
+        text = text.strip()
+        text = text.strip('\'')
+
+        if 'ERROR:' in text:
+            irc.reply(text)
             return
 
-        irc.reply(f'{count} {currency} = {response} {target}')
+        irc.reply(f'{count} {currency} = {text} {target}')
 
 
 Class = RateSX

@@ -166,23 +166,23 @@ class Smurf(callbacks.Plugin):
 
         try:
             if parsed_url.netloc == 'twitter.com':
-                response = requests.get(url, timeout=timeout, headers=headers)
-                text = response.text
+                with requests.get(url, timeout=timeout, headers=headers) as response:
+                    text = response.text
             else:
                 t = time()
                 size = 0
                 text = b''
 
-                response = requests.get(url, stream=True, timeout=timeout, headers=headers)
-                for chunk in response.iter_content(max_size):
-                    size += len(chunk)
-                    text += chunk
+                with requests.get(url, timeout=timeout, headers=headers, stream=True) as response:
+                    for chunk in response.iter_content(max_size):
+                        size += len(chunk)
+                        text += chunk
 
-                    if size >= max_size:
-                        break
-                    if time() - t > timeout:
-                        self.log.error(_('Smurf: URL <%s> timed out'), url)
-                        raise SmurfException(parsed_url.netloc, _('Timeout'))
+                        if size >= max_size:
+                            break
+                        if time() - t > timeout:
+                            self.log.error(_('Smurf: URL <%s> timed out'), url)
+                            raise SmurfException(parsed_url.netloc, _('Timeout'))
 
                 try:
                     text = text.decode(self.getEncoding(text) or 'utf8', 'replace')

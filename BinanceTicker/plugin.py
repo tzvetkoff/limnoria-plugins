@@ -34,7 +34,7 @@
 # pylint:disable=too-many-arguments
 
 import json
-from requests import get
+import requests
 
 from supybot import callbacks
 from supybot.commands import optional, wrap
@@ -76,18 +76,20 @@ class BinanceTicker(callbacks.Plugin):
         url = f'https://api.binance.com/api/v3/ticker/price?symbol={symbol}'
         timeout = self.registryValue('timeout', msg.channel, irc.network)
 
-        text = str(get(url, timeout=timeout).text)
+        with requests.get(url, timeout=timeout) as response:
+            text = str(response.text)
+
         try:
-            response = json.loads(text)
+            data = json.loads(text)
         except json.JSONDecodeError as e:
             irc.reply(f'ERROR: {e}')
             return
 
-        if 'code' in response and 'msg' in response:
-            irc.reply(f'ERROR: {response['msg']}')
+        if 'code' in data and 'msg' in data:
+            irc.reply(f'ERROR: {data['msg']}')
             return
 
-        irc.reply(f'{count} {currency} = {response['price']} {target}')
+        irc.reply(f'{count} {currency} = {data['price']} {target}')
 
 
 Class = BinanceTicker

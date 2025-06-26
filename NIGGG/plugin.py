@@ -87,8 +87,9 @@ class NIGGG(callbacks.Plugin):
                     irc.queueMsg(ircmsgs.privmsg(channel, message))
 
     def fetch_data(self):
-        response = get('https://ndc.niggg.bas.bg/data.xml', timeout=self.registryValue('timeout')).text
-        tree = ElementTree.fromstring(response)
+        with get('https://ndc.niggg.bas.bg/data.xml', timeout=self.registryValue('timeout')) as response:
+            text = response.text
+        tree = ElementTree.fromstring(text)
 
         result = []
         for marker in tree.iter('marker'):

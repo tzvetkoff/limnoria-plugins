@@ -52,16 +52,18 @@ class Cayman(callbacks.Plugin):
     '''Displays cat gifs or facts in channels'''
 
     threaded = True
-    last_message_timestamp = False
+    last_message_timestamp = datetime.datetime(1111, 11, 11, 11, 11, 11)
 
     def _gif(self, channel, network):
-        response = requests.get('http://edgecats.net/random', timeout=self.registryValue('timeout', channel, network))
-        return response.text.replace('http://', 'https://')
+        timeout = self.registryValue('timeout', channel, network)
+        with requests.get('http://edgecats.net/random', timeout=timeout) as response:
+            return response.text.replace('http://', 'https://')
 
     def _fact(self, channel, network):
-        response = requests.get('https://catfact.ninja/fact', timeout=self.registryValue('timeout', channel, network))
-        data = json.loads(response.text)
-        return data['fact']
+        timeout = self.registryValue('timeout', channel, network)
+        with requests.get('https://catfact.ninja/fact', timeout=timeout) as response:
+            data = json.loads(response.text)
+            return data['fact']
 
     def _match(self, message, channel, network):
         words = [word.strip() for word in self.registryValue('triggerWords', channel, network)]
