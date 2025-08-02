@@ -165,7 +165,7 @@ class Smurf(callbacks.Plugin):
             headers['User-agent'] = 'Googlebot-News'
 
         try:
-            if parsed_url.netloc == 'twitter.com':
+            if parsed_url.netloc == 'twitter.com' or parsed_url.netloc == 'x.com':
                 with requests.get(url, timeout=timeout, headers=headers) as response:
                     text = response.text
             else:

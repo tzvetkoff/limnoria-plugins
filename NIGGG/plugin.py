@@ -112,7 +112,7 @@ class NIGGG(callbacks.Plugin):
     def save_announced(self, announced):
         try:
             with open(AnnouncedFilename, 'w', encoding='utf-8') as f:
-                json.dump(announced, f)
+                json.dump(announced, f, indent=2)
         except:
             pass
 
