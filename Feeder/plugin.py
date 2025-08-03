@@ -273,7 +273,7 @@ class Feeder(callbacks.Plugin):
             def set(self, irc, _msg, _args, name, key, value):
                 '''<name> <key> <value>
 
-                Sets a feed metadata field. One of: title, format, url, ignore.
+                Sets a feed metadata field. One of: title, format, url, ignore
                 '''
 
                 if key not in ['title', 'format', 'url', 'ignore']:
@@ -345,7 +345,7 @@ class Feeder(callbacks.Plugin):
             def list(self, irc, _msg, _args):
                 '''No arguments
 
-                Lists configured announces'''
+                Lists configured announces.'''
 
                 plugin = irc.getCallback('Feeder')
                 announces = plugin.registryValue('announces', network=irc.network)
@@ -427,6 +427,53 @@ class Feeder(callbacks.Plugin):
                             del announces[channel]
 
                         irc.replySuccess()
+
+            @wrap([
+                'admin',
+                'somethingWithoutSpaces',
+                'somethingWithoutSpaces',
+            ])
+            def reset(self, irc, _msg, _args, channel, name):
+                '''<channel> <name>
+
+                Resets announced database for a channel'''
+
+                if channel not in irc.state.channels:
+                    msg = _('Channel {channel} not found.').format_map({
+                        'channel': channel,
+                    })
+                    irc.reply(msg)
+                    return
+
+                plugin = irc.getCallback('Feeder')
+                feeds = plugin.registryValue('feeds')
+
+                if name not in feeds:
+                    msg = _('Feed {name} not found.').format_map({
+                        'name': name,
+                    })
+                    irc.reply(msg)
+                    return
+
+                announces = plugin.registryValue('announces', network=irc.network)
+
+                if name not in announces.get(channel, []):
+                    msg = _('Feed {name} not announced in {channel}.').format_map({
+                        'name':    name,
+                        'channel': channel,
+                    })
+                    irc.reply(msg)
+                else:
+                    network = str(irc.network)
+                    channel = str(channel)
+                    announced = plugin.load_announced()
+
+                    if network in announced:
+                        if channel in announced[network]:
+                            if name in announced[network][channel]:
+                                del announced[network][channel][name]
+
+                    irc.replySuccess()
 
 
 Class = Feeder

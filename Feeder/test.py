@@ -93,11 +93,20 @@ class FeederTestCase(ChannelPluginTestCase):
     def test011CommandAnnounceList(self):
         self.assertRegexp('feeder announce list', r'{\'#test\': \[\'kernel\'\]}')
 
-    def test012CommandAnnounceRemove(self):
+    def test012CommandAnnounceReset(self):
+        self.assertRegexp('feeder announce reset #channel foobar', r'Channel #channel not found')
+        self.assertRegexp('feeder announce reset #test foobar', r'Feed foobar not found')
+        self.assertRegexp('feeder announce reset #test kernel', r'The operation succeeded')
+        self.assertEqual(conf.supybot.plugins.feeder.announces.getSpecific(network='test')(), {
+            '#test': ['kernel'],
+        })
+
+    def test013CommandAnnounceRemove(self):
         self.assertRegexp('feeder announce remove #channel foobar', r'Channel #channel not found')
         self.assertRegexp('feeder announce remove #test foobar', r'Feed foobar not found')
         self.assertRegexp('feeder announce remove #test kernel', r'The operation succeeded')
         self.assertEqual(conf.supybot.plugins.feeder.announces.getSpecific(network='test')(), {})
+
 
     def dbg(self, msg):
         print()
