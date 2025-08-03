@@ -86,7 +86,7 @@ class FeederTestCase(ChannelPluginTestCase):
         self.assertRegexp('feeder announce add #channel foobar', r'Channel #channel not found')
         self.assertRegexp('feeder announce add #test foobar', r'Feed foobar not found')
         self.assertRegexp('feeder announce add #test kernel', r'The operation succeeded')
-        self.assertEqual(conf.supybot.plugins.feeder.announces(), {
+        self.assertEqual(conf.supybot.plugins.feeder.announces.getSpecific(network='test')(), {
             '#test': ['kernel'],
         })
 
@@ -97,7 +97,7 @@ class FeederTestCase(ChannelPluginTestCase):
         self.assertRegexp('feeder announce remove #channel foobar', r'Channel #channel not found')
         self.assertRegexp('feeder announce remove #test foobar', r'Feed foobar not found')
         self.assertRegexp('feeder announce remove #test kernel', r'The operation succeeded')
-        self.assertEqual(conf.supybot.plugins.feeder.announces(), {})
+        self.assertEqual(conf.supybot.plugins.feeder.announces.getSpecific(network='test')(), {})
 
     def dbg(self, msg):
         print()

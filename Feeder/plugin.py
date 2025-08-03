@@ -348,7 +348,7 @@ class Feeder(callbacks.Plugin):
                 Lists configured announces'''
 
                 plugin = irc.getCallback('Feeder')
-                announces = plugin.registryValue('announces')
+                announces = plugin.registryValue('announces', network=irc.network)
 
                 if announces:
                     irc.reply(announces)
@@ -382,7 +382,7 @@ class Feeder(callbacks.Plugin):
                     irc.reply(msg)
                     return
 
-                with plugin.registryValue('announces', value=False).editable() as announces:
+                with plugin.registryValue('announces', network=irc.network, value=False).editable() as announces:
                     announces[channel] = list(set(announces.get(channel, []) + [name]))
 
                 irc.replySuccess()
@@ -414,7 +414,7 @@ class Feeder(callbacks.Plugin):
                     irc.reply(msg)
                     return
 
-                with plugin.registryValue('announces', value=False).editable() as announces:
+                with plugin.registryValue('announces', network=irc.network, value=False).editable() as announces:
                     if name not in announces.get(channel, []):
                         msg = _('Feed {name} not announced in {channel}.').format_map({
                             'name':    name,
