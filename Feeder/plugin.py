@@ -35,6 +35,7 @@
 # pylint:disable=too-many-branches
 # pylint:disable=too-many-blocks
 # pylint:disable=too-many-nested-blocks
+# pylint:disable=too-many-locals
 # pylint:disable=bare-except
 # pylint:disable=invalid-name
 
@@ -81,54 +82,57 @@ class Feeder(callbacks.Plugin):
             entries = response['entries']
 
             for irc in world.ircs:
-                announces = self.registryValue('announces', network=irc.network)
+                with self.registryValue('announces', network=irc.network, value=False).editable() as announces:
+                    for channel in announces:
+                        if channel not in irc.state.channels:
+                            del announces[channel]
+                            continue
 
-                for channel in announces:
-                    if feed in announces[channel]:
-                        last_n = self.registryValue('lastN', network=irc.network)
-                        last_n_entries = entries[0:last_n]
+                        if feed in announces[channel]:
+                            last_n = self.registryValue('lastN', network=irc.network)
+                            last_n_entries = entries[0:last_n]
 
-                        for entry in last_n_entries:
-                            if 'ignore' in feeds[feed]:
-                                regexp = re.compile(feeds[feed]['ignore'])
-                                if regexp.match(entry['title']):
-                                    continue
+                            for entry in last_n_entries:
+                                if 'ignore' in feeds[feed]:
+                                    regexp = re.compile(feeds[feed]['ignore'])
+                                    if regexp.match(entry['title']):
+                                        continue
 
-                            if 'summary' in entry:
-                                del entry['summary']
-                            if 'content' in entry:
-                                del entry['content']
+                                if 'summary' in entry:
+                                    del entry['summary']
+                                if 'content' in entry:
+                                    del entry['content']
 
-                            entry['feed'] = feed
-                            if 'title' in feeds[feed]:
-                                entry['feed'] = feeds[feed]['title']
+                                entry['feed'] = feed
+                                if 'title' in feeds[feed]:
+                                    entry['feed'] = feeds[feed]['title']
 
-                            fmt = self.registryValue('format', network=irc.network)
-                            if 'format' in feeds[feed]:
-                                fmt = feeds[feed]['format']
+                                fmt = self.registryValue('format', network=irc.network)
+                                if 'format' in feeds[feed]:
+                                    fmt = feeds[feed]['format']
 
-                            network = str(irc.network)
-                            if network not in announced:
-                                announced[network] = {}
+                                network = str(irc.network)
+                                if network not in announced:
+                                    announced[network] = {}
 
-                            channel = str(channel)
-                            if channel not in announced[network]:
-                                announced[network][channel] = {}
+                                channel = str(channel)
+                                if channel not in announced[network]:
+                                    announced[network][channel] = {}
 
-                            if feed not in announced[network][channel]:
-                                announced[network][channel][feed] = []
+                                if feed not in announced[network][channel]:
+                                    announced[network][channel][feed] = []
 
-                            entry_id = None
-                            if 'id' in entry:
-                                entry_id = entry['id']
-                            else:
-                                entry_id = entry['link']
+                                entry_id = None
+                                if 'id' in entry:
+                                    entry_id = entry['id']
+                                else:
+                                    entry_id = entry['link']
 
-                            if entry_id not in announced[network][channel][feed]:
-                                announced[network][channel][feed].append(entry_id)
+                                if entry_id not in announced[network][channel][feed]:
+                                    announced[network][channel][feed].append(entry_id)
 
-                                msg = fmt.format_map(entry)
-                                irc.queueMsg(ircmsgs.privmsg(channel, msg))
+                                    msg = fmt.format_map(entry)
+                                    irc.queueMsg(ircmsgs.privmsg(channel, msg))
 
         self.save_announced(announced)
 
@@ -209,13 +213,29 @@ class Feeder(callbacks.Plugin):
                 feeds = plugin.registryValue('feeds')
 
                 if feeds:
-                    names = ', '.join(feeds.keys())
-                    msg = _('Monitored feeds: {names}').format_map({
-                        'names': names,
-                    })
-                    irc.reply(msg)
+                    irc.reply(', '.join(feeds.keys()))
                 else:
                     irc.reply(_('No feeds configured.'))
+
+            @wrap([
+                'admin',
+                'somethingWithoutSpaces',
+            ])
+            def info(self, irc, _msg, _args, name):
+                '''<name>
+
+                Get full feed info'''
+
+                plugin = irc.getCallback('Feeder')
+                feeds = plugin.registryValue('feeds')
+
+                if name in feeds:
+                    irc.reply(json.dumps(feeds[name], separators=(',', ':')))
+                else:
+                    msg = _('Feed {name} not found.').format_map({
+                        'name': name,
+                    })
+                    irc.reply(msg)
 
             @wrap([
                 'admin',
@@ -351,7 +371,7 @@ class Feeder(callbacks.Plugin):
                 announces = plugin.registryValue('announces', network=irc.network)
 
                 if announces:
-                    irc.reply(announces)
+                    irc.reply(json.dumps(announces, separators=(',', ':')))
                 else:
                     irc.reply(_('No announces configured.'))
 

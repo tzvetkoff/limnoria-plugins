@@ -35,6 +35,7 @@
 # pylint:disable=redefined-builtin
 
 from supybot.test import *
+from supybot import world
 
 
 class FeederTestCase(ChannelPluginTestCase):
@@ -55,16 +56,20 @@ class FeederTestCase(ChannelPluginTestCase):
         })
 
     def test001CommandFeedList(self):
-        self.assertRegexp('feeder feed list', r'Monitored feeds: kernel')
+        self.assertRegexp('feeder feed list', r'kernel')
 
-    def test002CommandFeedRemove(self):
+    def test002CommandFeedInfo(self):
+        self.assertRegexp('feeder feed info foobar', r'Feed foobar not found')
+        self.assertRegexp('feeder feed info kernel', r'{"url":"https://www.kernel.org/feeds/kdist.xml"}')
+
+    def test003CommandFeedRemove(self):
         self.assertRegexp('feeder feed remove foobar', r'Feed foobar not found')
         self.assertRegexp('feeder feed remove awesome', r'The operation succeeded')
         self.assertEqual(conf.supybot.plugins.feeder.feeds(), {
             'kernel': {'url': 'https://www.kernel.org/feeds/kdist.xml'},
         })
 
-    def test003CommandFeedSet(self):
+    def test004CommandFeedSet(self):
         self.assertRegexp('feeder feed set foobar title FooBar', r'Feed foobar not found')
         self.assertRegexp('feeder feed set foobar k1 v1', r'Metadata k1 not allowed')
         self.assertRegexp('feeder feed set kernel k1 v1', r'Metadata k1 not allowed')
@@ -73,7 +78,7 @@ class FeederTestCase(ChannelPluginTestCase):
             'kernel': {'url': 'https://www.kernel.org/feeds/kdist.xml', 'title': 'Kernel'},
         })
 
-    def test004CommandFeedUnset(self):
+    def test005CommandFeedUnset(self):
         self.assertRegexp('feeder feed unset foobar title', r'Feed foobar not found')
         self.assertRegexp('feeder feed unset foobar k1', r'Metadata k1 not allowed')
         self.assertRegexp('feeder feed unset kernel title', r'The operation succeeded')
@@ -91,7 +96,7 @@ class FeederTestCase(ChannelPluginTestCase):
         })
 
     def test011CommandAnnounceList(self):
-        self.assertRegexp('feeder announce list', r'{\'#test\': \[\'kernel\'\]}')
+        self.assertRegexp('feeder announce list', r'{"#test":\["kernel"\]}')
 
     def test012CommandAnnounceReset(self):
         self.assertRegexp('feeder announce reset #channel foobar', r'Channel #channel not found')
@@ -106,16 +111,5 @@ class FeederTestCase(ChannelPluginTestCase):
         self.assertRegexp('feeder announce remove #test foobar', r'Feed foobar not found')
         self.assertRegexp('feeder announce remove #test kernel', r'The operation succeeded')
         self.assertEqual(conf.supybot.plugins.feeder.announces.getSpecific(network='test')(), {})
-
-
-    def dbg(self, msg):
-        print()
-        print('-*'*32, '-', sep='')
-        print(msg)
-        print('-*'*32, '-', sep='')
-        print()
-
-    def cmd(self, cmd, *_args, **_kvargs):
-        self.dbg(self.getMsg(cmd))
 
 # vim:ft=python:ts=4:sts=4:sw=4:et:tw=119

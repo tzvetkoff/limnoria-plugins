@@ -1,3 +1,6 @@
+/.env
+/.autoenv
+/.autoexec
 /.vscode
 /tmp
 /typings
