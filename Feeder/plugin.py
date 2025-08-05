@@ -199,7 +199,7 @@ class Feeder(callbacks.Plugin):
                 'refresh': plugin.scheduler_refresh,
             }[op]()
 
-        class feed(callbacks.Commands):
+        class feeds(callbacks.Commands):
             @wrap([
                 'admin',
             ])
@@ -357,7 +357,10 @@ class Feeder(callbacks.Plugin):
                         })
                         irc.reply(msg)
 
-        class announce(callbacks.Commands):
+        class feed(feeds):
+            pass
+
+        class announces(callbacks.Commands):
             @wrap([
                 'admin',
             ])
@@ -493,6 +496,9 @@ class Feeder(callbacks.Plugin):
                                 del announced[network][channel][name]
 
                     irc.replySuccess()
+
+        class announce(announces):
+            pass
 
 
 Class = Feeder
