@@ -33,7 +33,6 @@
 # pylint:disable=too-many-ancestors
 # pylint:disable=too-many-arguments
 # pylint:disable=too-many-branches
-# pylint:disable=too-many-blocks
 # pylint:disable=too-many-nested-blocks
 # pylint:disable=too-many-locals
 # pylint:disable=bare-except

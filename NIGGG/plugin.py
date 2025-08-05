@@ -33,6 +33,7 @@
 # pylint:disable=too-many-ancestors
 # pylint:disable=too-many-arguments
 # pylint:disable=bare-except
+# pylint:disable=invalid-name
 
 import json
 import os
@@ -116,22 +117,6 @@ class NIGGG(callbacks.Plugin):
         except:
             pass
 
-    @wrap([
-        'admin',
-        ('literal', {'start', 'stop', 'restart', 'refresh'}),
-    ])
-    def scheduler(self, _irc, _msg, _args, op):
-        '''[start|stop|restart]
-
-        Starts/stops/restarts the scheduler.'''
-
-        {
-            'start':   self.scheduler_start,
-            'stop':    self.scheduler_stop,
-            'restart': self.scheduler_restart,
-            'refresh': self.scheduler_refresh,
-        }[op]()
-
     def scheduler_start(self):
         if self.job_scheduler is None:
             self.job_scheduler = BackgroundScheduler()
@@ -157,6 +142,25 @@ class NIGGG(callbacks.Plugin):
             pass
 
         self.refresh()
+
+    class niggg(callbacks.Commands):
+        @wrap([
+            'admin',
+            ('literal', {'start', 'stop', 'restart', 'refresh'}),
+        ])
+        def scheduler(self, irc, _msg, _args, op):
+            '''[start|stop|restart]
+
+            Starts/stops/restarts the scheduler.'''
+
+            plugin = irc.getCallback('NIGGG')
+
+            {
+                'start':   plugin.scheduler_start,
+                'stop':    plugin.scheduler_stop,
+                'restart': plugin.scheduler_restart,
+                'refresh': plugin.scheduler_refresh,
+            }[op]()
 
 
 Class = NIGGG

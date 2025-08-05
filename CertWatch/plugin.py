@@ -33,6 +33,7 @@
 # pylint:disable=too-many-ancestors
 # pylint:disable=too-many-arguments
 # pylint:disable=bare-except
+# pylint:disable=invalid-name
 # pyright:reportArgumentType=none
 # pyright:reportAttributeAccessIssue=none
 # pyright:reportOperatorIssue=none
@@ -141,22 +142,6 @@ class CertWatch(callbacks.Plugin):
             'not_after_str':  cert.not_valid_after_utc.strftime('%Y-%m-%d %H:%M:%S %Z'),
         }
 
-    @wrap([
-        'admin',
-        ('literal', {'start', 'stop', 'restart', 'refresh'}),
-    ])
-    def scheduler(self, _irc, _msg, _args, op):
-        '''[start|stop|restart]
-
-        Starts/stops/restarts the scheduler.'''
-
-        {
-            'start':   self.scheduler_start,
-            'stop':    self.scheduler_stop,
-            'restart': self.scheduler_restart,
-            'refresh': self.scheduler_refresh,
-        }[op]()
-
     def scheduler_start(self):
         if self.job_scheduler is None:
             self.job_scheduler = BackgroundScheduler()
@@ -179,6 +164,26 @@ class CertWatch(callbacks.Plugin):
 
     def scheduler_refresh(self):
         self.refresh()
+
+    class certwatch(callbacks.Commands):
+        @wrap([
+            'admin',
+            ('literal', {'start', 'stop', 'restart', 'refresh'}),
+        ])
+        def scheduler(self, irc, _msg, _args, op):
+            '''[start|stop|restart]
+
+            Starts/stops/restarts the scheduler.'''
+
+            plugin = irc.getCallback('CertWatch')
+
+            {
+                'start':   plugin.scheduler_start,
+                'stop':    plugin.scheduler_stop,
+                'restart': plugin.scheduler_restart,
+                'refresh': plugin.scheduler_refresh,
+            }[op]()
+
 
 
 Class = CertWatch
