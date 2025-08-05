@@ -35,7 +35,6 @@
 # pylint:disable=redefined-builtin
 
 from supybot.test import *
-from supybot import world
 
 
 class FeederTestCase(ChannelPluginTestCase):
