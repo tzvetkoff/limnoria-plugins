@@ -366,7 +366,8 @@ class Feeder(callbacks.Plugin):
                         irc.reply(msg)
 
         class feed(feeds):
-            pass
+            def listCommands(self, pluginCommands=...):
+                return []
 
         class announces(callbacks.Commands):
             @wrap([
@@ -506,7 +507,8 @@ class Feeder(callbacks.Plugin):
                     irc.replySuccess()
 
         class announce(announces):
-            pass
+            def listCommands(self, pluginCommands=...):
+                return []
 
 
 Class = Feeder
