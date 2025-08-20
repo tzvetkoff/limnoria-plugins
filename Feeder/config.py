@@ -78,6 +78,11 @@ conf.registerNetworkValue(
 )
 conf.registerNetworkValue(
     Feeder,
+    'history',
+    registry.Integer(100, _('Number of entries to keep in announced history database')),
+)
+conf.registerNetworkValue(
+    Feeder,
     'announces',
     registry.Json({}, _('JSON-serialized configuration of channels feeds are announced to')),
 )

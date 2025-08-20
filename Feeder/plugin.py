@@ -37,6 +37,7 @@
 # pylint:disable=too-many-locals
 # pylint:disable=bare-except
 # pylint:disable=invalid-name
+# pylint:disable=broad-exception-caught
 
 import json
 import os
@@ -77,7 +78,12 @@ class Feeder(callbacks.Plugin):
         announced = self.load_announced()
 
         for feed in feeds:
-            response = parse(feeds[feed]['url'])
+            try:
+                response = parse(feeds[feed]['url'])
+            except Exception as e:
+                self.log.exception('Error refreshing feed %s: %s', feed, e)
+                continue
+
             entries = response['entries']
 
             for irc in world.ircs:
@@ -146,8 +152,10 @@ class Feeder(callbacks.Plugin):
         for network in announced:
             for channel in announced[network]:
                 for feed in announced[network][channel]:
-                    if len(announced[network][channel][feed]) > 100:
-                        announced[network][channel][feed] = announced[network][channel][feed][-100:]
+                    history = self.registryValue('history', network=network)
+
+                    if len(announced[network][channel][feed]) > history:
+                        announced[network][channel][feed] = announced[network][channel][feed][-history:]
 
         try:
             with open(AnnouncedFilename, 'w', encoding='utf-8') as f:
