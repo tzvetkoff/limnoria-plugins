@@ -504,6 +504,8 @@ class Feeder(callbacks.Plugin):
                             if name in announced[network][channel]:
                                 del announced[network][channel][name]
 
+                    plugin.save_announced(announced)
+
                     irc.replySuccess()
 
         class announce(announces):
