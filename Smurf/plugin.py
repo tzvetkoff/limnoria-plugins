@@ -230,6 +230,7 @@ class Smurf(callbacks.Plugin):
         return (None, None)
 
     def getTitleTwitter(self, irc, msg, url, parsed_url):
+        # Idea stolen from (now gone) https://github.com/oddluck/limnoria-plugins -> SpiffyTitles
         embed_url = f'https://publish.x.com/oembed?url={url}&omit_script=true'
         timeout = self.registryValue('timeout', msg.channel, irc.network)
         headers = conf.defaultHttpHeaders(irc.network, msg.channel)
@@ -258,6 +259,7 @@ class Smurf(callbacks.Plugin):
 
 
     def getTitleYouTube(self, irc, msg, url, parsed_url):
+        # Idea came after `getTitleTwitter` as YouTube also has oEmbed
         embed_url = f'https://www.youtube.com/oembed?url={url}&format=json'
         timeout = self.registryValue('timeout', msg.channel, irc.network)
         headers = conf.defaultHttpHeaders(irc.network, msg.channel)
