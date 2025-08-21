@@ -45,14 +45,14 @@ class SmurfTestCase(ChannelPluginTestCase):
         'plugins.smurf.timeout': 3.5,
         'plugins.smurf.reportErrors': True,
         'plugins.smurf.smurfMultipleURLs': True,
-        # 'plugins.smurf.ignoreUrlRegexp': 'porn',
+        # 'plugins.smurf.ignoreUrlRegexp': '/porn/',
         # 'plugins.smurf.ignoreDomains': 'pfoo.org'
     }
     timeout = 5
 
-    # @unittest.skipUnless(network, 'smurf tests require networking')
-    # def testSmurf000Normal(self):
-    #     self.assertRegexp('smurf https://pfoo.org/', r'^>> pfoo! \(at pfoo.org\)$')
+    @unittest.skipUnless(network, 'smurf tests require networking')
+    def testSmurf000Normal(self):
+        self.assertRegexp('smurf https://pfoo.org/', r'^>> pfoo! \(at pfoo.org\)$')
 
     @unittest.skipUnless(network, 'smurf tests require networking')
     def testSmurf001ChannelMessageNormal(self):
@@ -86,5 +86,8 @@ class SmurfTestCase(ChannelPluginTestCase):
     def testSmurf004Twitter(self):
         self.assertSnarfResponse('https://x.com/QuotesFuturama/status/1825513336236109929', '>> Marquita Maria Christina Chiquita Alana Paloma Ramona Rosita Catalina Lupe Martes Miercoles Jueves Viernes Sabado Domingo Veronica Helena Hermina Francesca Esperanza Valentina Carmelita Leonora Lupita Isabella Juanita Teresa Sofia Mariana Benihana Bonita Nereida Guadalupe Alvarez  pic.twitter.com/CnqpQslRoB — Futurama Quotes (@QuotesFuturama)  August 19, 2024 (at x.com)')
 
+    @unittest.skipUnless(network, 'smurf tests require networking')
+    def testSmurf005YouTube(self):
+        self.assertSnarfResponse('https://www.youtube.com/watch?v=cJygmsFYf9w', '>> Patlamaya Devam - Isyan Tetick - 1 Hour Alien Video - with english lyrics - ИНОПЛАНЕТЯНИН (at www.youtube.com)')
 
 # vim:ft=python:ts=4:sts=4:sw=4:et:tw=119

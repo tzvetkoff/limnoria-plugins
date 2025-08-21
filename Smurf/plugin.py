@@ -64,11 +64,15 @@ class Smurf(callbacks.Plugin):
         '''Initialize the plugin internal variables'''
         super().__init__(irc)
 
-        self.handlers['x.com']       = self.getTitleTwitter
-        self.handlers['twitter.com'] = self.getTitleTwitter
+        self.handlers['x.com']           = self.getTitleTwitter
+        self.handlers['www.x.com']       = self.getTitleTwitter
+        self.handlers['twitter.com']     = self.getTitleTwitter
+        self.handlers['www.twitter.com'] = self.getTitleTwitter
 
-        self.handlers['youtube.com'] = self.getTitleYoutube
-        self.handlers['youtu.be']    = self.getTitleYoutube
+        self.handlers['youtube.com']     = self.getTitleYouTube
+        self.handlers['www.youtube.com'] = self.getTitleYouTube
+        self.handlers['youtu.be']        = self.getTitleYouTube
+        self.handlers['www.youtu.be']    = self.getTitleYouTube
 
     def doPrivmsg(self, irc, msg):
         if not msg.channel:
@@ -225,7 +229,7 @@ class Smurf(callbacks.Plugin):
         # Quietly weep...
         return (None, None)
 
-    def getTitleTwitter(self, irc, msg, url, _parsed_url):
+    def getTitleTwitter(self, irc, msg, url, parsed_url):
         embed_url = f'https://publish.x.com/oembed?url={url}&omit_script=true'
         timeout = self.registryValue('timeout', msg.channel, irc.network)
         headers = conf.defaultHttpHeaders(irc.network, msg.channel)
@@ -248,14 +252,22 @@ class Smurf(callbacks.Plugin):
 
         #     template = self.registryValue('twitter.template', msg.channel, irc.network)
         #     title = template.format_map(result)
-        #     return (title, 'x.com')
+        #     return (title, parsed_url.netloc)
 
-        return (result['text'], 'x.com')
+        return (result['text'], parsed_url.netloc)
 
 
-    def getTitleYoutube(self, irc, msg, url, parsed_url):
-        # TODO: Implement me!
-        return self.getTitleDefault(irc, msg, url, parsed_url)
+    def getTitleYouTube(self, irc, msg, url, parsed_url):
+        embed_url = f'https://www.youtube.com/oembed?url={url}&format=json'
+        timeout = self.registryValue('timeout', msg.channel, irc.network)
+        headers = conf.defaultHttpHeaders(irc.network, msg.channel)
+
+        with get(embed_url, timeout=timeout, headers=headers) as response:
+            text = response.text
+
+        response = loads(text)
+
+        return (response['title'], parsed_url.netloc)
 
     def getTitle(self, irc, msg, url, parsed_url = None):
         if not parsed_url:
