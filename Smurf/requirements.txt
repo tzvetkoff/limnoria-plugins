@@ -1,2 +1,3 @@
 requests
 charset-normalizer
+beautifulsoup4

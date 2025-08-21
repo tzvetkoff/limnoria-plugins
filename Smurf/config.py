@@ -68,18 +68,23 @@ conf.registerChannelValue(
 )
 conf.registerChannelValue(
     Smurf,
-    'showRedirectChain',
-    registry.Boolean(False, _('Whether to display full redirect chain in hostnames'))
-)
-conf.registerChannelValue(
-    Smurf,
     'smurfMultipleURLs',
     registry.Boolean(False, _('Whether to smurf multiple URLs in a message')),
 )
 conf.registerChannelValue(
     Smurf,
+    'ignoreDomains',
+    registry.CommaSeparatedSetOfStrings(set(), _('Set of ignored domains')),
+)
+conf.registerChannelValue(
+    Smurf,
     'ignoreUrlRegexp',
     registry.Regexp(None, _('Ignore URL regexp')),
+)
+conf.registerChannelValue(
+    Smurf,
+    'template',
+    registry.String('>> {title} (at {domain})', _('Title message template')),
 )
 
 # vim:ft=python:ts=4:sts=4:sw=4:et:tw=119

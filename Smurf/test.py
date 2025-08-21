@@ -33,6 +33,7 @@
 # pylint:disable=wildcard-import
 # pylint:disable=unused-wildcard-import
 # pylint:disable=redefined-builtin
+# pylint:disable=line-too-long
 
 from supybot.test import *
 
@@ -41,28 +42,49 @@ class SmurfTestCase(ChannelPluginTestCase):
     plugins = ('Smurf',)
     config = {
         'plugins.smurf.enable': True,
-        'plugins.smurf.timeout': 5.0,
+        'plugins.smurf.timeout': 3.5,
         'plugins.smurf.reportErrors': True,
-        'plugins.smurf.showRedirectChain': True,
         'plugins.smurf.smurfMultipleURLs': True,
-        # 'plugins.smurf.ignoreUrlRegexp': r'/porn/',
+        # 'plugins.smurf.ignoreUrlRegexp': 'porn',
+        # 'plugins.smurf.ignoreDomains': 'pfoo.org'
     }
     timeout = 5
 
+    # @unittest.skipUnless(network, 'smurf tests require networking')
+    # def testSmurf000Normal(self):
+    #     self.assertRegexp('smurf https://pfoo.org/', r'^>> pfoo! \(at pfoo.org\)$')
+
     @unittest.skipUnless(network, 'smurf tests require networking')
-    def testSmurf(self):
+    def testSmurf001ChannelMessageNormal(self):
+        self.assertSnarfResponse('https://pfoo.org/,', '>> pfoo! (at pfoo.org)')
+
+    @unittest.skipUnless(network, 'smurf tests require networking')
+    def testSmurf002ChannelMessageIgnoreUrlRegexp(self):
         ignore_url_regexp_var = conf.supybot.plugins.smurf.ignoreUrlRegexp
 
         try:
+            self.timeout = 1
             ignore_url_regexp_var.set(r'/porn/')
-            self.assertRegexp('smurf https://pfoo.org/', r'^>> pfoo! \(at pfoo.org\)$')
+            self.assertSnarfNoResponse('https://pfoo.org/the-internet-is-for-porn/')
         finally:
+            self.timeout = 5
             ignore_url_regexp_var.set(None)
 
     @unittest.skipUnless(network, 'smurf tests require networking')
-    def testChannelMessage(self):
-        self.feedMsg('https://pfoo.org/,')
-        m = self.getMsg(' ')
-        self.assertIn('>> pfoo! (at pfoo.org)', str(m))
+    def testSmurf003ChannelMessageIgnoreDomains(self):
+        ignore_domains = conf.supybot.plugins.smurf.ignoreDomains
+
+        try:
+            self.timeout = 1
+            ignore_domains.set('pfoo.org')
+            self.assertSnarfNoResponse('https://pfoo.org/')
+        finally:
+            self.timeout = 5
+            ignore_domains.set('')
+
+    @unittest.skipUnless(network, 'smurf tests require networking')
+    def testSmurf004Twitter(self):
+        self.assertSnarfResponse('https://x.com/QuotesFuturama/status/1825513336236109929', '>> Marquita Maria Christina Chiquita Alana Paloma Ramona Rosita Catalina Lupe Martes Miercoles Jueves Viernes Sabado Domingo Veronica Helena Hermina Francesca Esperanza Valentina Carmelita Leonora Lupita Isabella Juanita Teresa Sofia Mariana Benihana Bonita Nereida Guadalupe Alvarez  pic.twitter.com/CnqpQslRoB — Futurama Quotes (@QuotesFuturama)  August 19, 2024 (at x.com)')
+
 
 # vim:ft=python:ts=4:sts=4:sw=4:et:tw=119

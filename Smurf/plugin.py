@@ -36,11 +36,12 @@
 # pyright:reportPrivateUsage=false
 
 import re
-import sys
 from time import time
+from json import loads
 from html.entities import entitydefs
 from urllib.parse import urlparse, urlunparse
-import requests
+from requests import get
+from bs4 import BeautifulSoup
 
 from supybot import conf, utils, ircmsgs, callbacks
 from supybot.commands import wrap
@@ -56,6 +57,18 @@ except ImportError:
 class Smurf(callbacks.Plugin):
     '''Fetches URL titles'''
     threaded = True
+
+    handlers = {}
+
+    def __init__(self, irc):
+        '''Initialize the plugin internal variables'''
+        super().__init__(irc)
+
+        self.handlers['x.com']       = self.getTitleTwitter
+        self.handlers['twitter.com'] = self.getTitleTwitter
+
+        self.handlers['youtube.com'] = self.getTitleYoutube
+        self.handlers['youtu.be']    = self.getTitleYoutube
 
     def doPrivmsg(self, irc, msg):
         if not msg.channel:
@@ -77,8 +90,9 @@ class Smurf(callbacks.Plugin):
             except Exception:
                 ignore_url_re = None
 
+        ignore_domains = self.registryValue('ignoreDomains', msg.channel, irc.network)
+
         report_errors = self.registryValue('reportErrors', msg.channel, irc.network)
-        show_redirect_chain = self.registryValue('showRedirectChain', msg.channel, irc.network)
         smurf_multiple_urls = self.registryValue('smurfMultipleUrls', msg.channel, irc.network)
 
         for url in utils.web.httpUrlRe.findall(text):
@@ -88,10 +102,20 @@ class Smurf(callbacks.Plugin):
             if ignore_url_re and ignore_url_re.search(url):
                 continue
 
+            parsed_url = urlparse(url)
+            if parsed_url.netloc in ignore_domains:
+                continue
+
             try:
-                title, domain = self.getTitle(irc, msg, url, show_redirect_chain)
+                title, domain = self.getTitle(irc, msg, url, parsed_url)
                 if title and domain:
-                    irc.reply(_('>> %s (at %s)') % (title, domain), prefixNick=False)
+                    template = self.registryValue('template', msg.channel, irc.network)
+                    reply = template.format_map({
+                        'title':  title,
+                        'domain': domain,
+                    })
+
+                    irc.reply(reply, prefixNick=False)
             except SmurfException as e:
                 if report_errors:
                     irc.reply(_('!! Error fetching title for %s: %s') % (e.domain, e.message), prefixNick=False)
@@ -108,14 +132,18 @@ class Smurf(callbacks.Plugin):
         Fetch title from URL
         '''
 
-        show_redirect_chain = self.registryValue('showRedirectChain', msg.channel, irc.network)
         report_errors = self.registryValue('reportErrors', msg.channel, irc.network)
 
         try:
-            result = self.getTitle(irc, msg, url, show_redirect_chain)
-            if result:
-                (title, domain) = result
-                irc.reply(_('>> %s (at %s)') % (title, domain))
+            (title, domain) = self.getTitle(irc, msg, url)
+            if title and domain:
+                template = self.registryValue('template', msg.channel, irc.network)
+                reply = template.format_map({
+                    'title':  title,
+                    'domain': domain,
+                })
+
+                irc.reply(reply)
             else:
                 irc.reply(_('!! No title found'))
         except SmurfException as e:
@@ -139,7 +167,7 @@ class Smurf(callbacks.Plugin):
         except Exception:
             return None
 
-    def getTitle(self, irc, msg, url, show_redirect_chain): # pylint:disable=too-many-locals,too-many-statements
+    def getTitleDefault(self, irc, msg, url, parsed_url): # pylint:disable=too-many-locals,too-many-statements
         # Some things stolen from:
         #   https://github.com/progval/Limnoria/blob/master/plugins/Web/plugin.py
         #   https://github.com/impredicative/urltitle/blob/master/urltitle/config/overrides.py
@@ -147,62 +175,40 @@ class Smurf(callbacks.Plugin):
         timeout = self.registryValue('timeout', msg.channel, irc.network)
         headers = conf.defaultHttpHeaders(irc.network, msg.channel)
 
-        parsed_url = urlparse(url)
-        netloc = parsed_url.netloc
-
-        if parsed_url.netloc in ('youtube.com', 'youtu.be') or parsed_url.netloc.endswith(('.youtube.com')):
-            max_size = max(max_size, 524288)
-        elif parsed_url.netloc in ('reddit.com', 'www.reddit.com', 'new.reddit.com'):
-            parsed_url = parsed_url._replace(netloc='old.reddit.com')
-            url = urlunparse(parsed_url)
-        elif parsed_url.netloc in ('mobile.twitter.com', 'twitter.com'):
-            parsed_url = parsed_url._replace(netloc='twitter.com')
-            url = urlunparse(parsed_url)
-            headers['User-agent'] = 'Googlebot-News'
+        if parsed_url.netloc in ('reddit.com', 'www.reddit.com', 'new.reddit.com'):
+            replaced_parsed_url = parsed_url._replace(netloc='old.reddit.com')
+            url = urlunparse(replaced_parsed_url)
         elif parsed_url.netloc in ('github.com'):
             max_size = max(max_size, 65536)
         elif parsed_url.netloc in ('c0re.pfoo.org'):
             headers['User-agent'] = 'Googlebot-News'
 
         try:
-            if parsed_url.netloc == 'twitter.com' or parsed_url.netloc == 'x.com':
-                with requests.get(url, timeout=timeout, headers=headers) as response:
-                    text = response.text
-            else:
-                t = time()
-                size = 0
-                text = b''
+            t = time()
+            size = 0
+            text = b''
 
-                with requests.get(url, timeout=timeout, headers=headers, stream=True) as response:
-                    for chunk in response.iter_content(max_size):
-                        size += len(chunk)
-                        text += chunk
+            with get(url, timeout=timeout, headers=headers, stream=True) as response:
+                for chunk in response.iter_content(max_size):
+                    size += len(chunk)
+                    text += chunk
 
-                        if size >= max_size:
-                            break
-                        if time() - t > timeout:
-                            self.log.error(_('Smurf: URL <%s> timed out'), url)
-                            raise SmurfException(parsed_url.netloc, _('Timeout'))
+                    if size >= max_size:
+                        break
+                    if time() - t > timeout:
+                        self.log.error(_('Smurf: URL <%s> timed out'), url)
+                        raise SmurfException(parsed_url.netloc, _('Timeout'))
 
-                try:
-                    text = text.decode(self.getEncoding(text) or 'utf8', 'replace')
-                except UnicodeDecodeError as e:
-                    self.log.error(_('Smurf: URL <%s> - Cannot guess encoding'), url)
-                    raise SmurfException(parsed_url.netloc, _('Cannot guess encoding')) from e
+            try:
+                text = text.decode(self.getEncoding(text) or 'utf8', 'replace')
+            except UnicodeDecodeError as e:
+                self.log.error(_('Smurf: URL <%s> - Cannot guess encoding'), url)
+                raise SmurfException(parsed_url.netloc, _('Cannot guess encoding')) from e
         except SmurfException:
             raise
         except Exception as e:
             self.log.error(_('Smurf: URL <%s> raised <%s>'), url, str(e))
             raise SmurfException(parsed_url.netloc, str(e)) from e
-
-        if show_redirect_chain and sys.version_info >= (3, 4):
-            try:
-                redirect_chain = [urlparse(site.url).netloc for site in response.history]
-                redirect_chain = list(dict.fromkeys(redirect_chain))
-                redirect_chain.append(urlparse(response.url).netloc)
-                netloc = ' -> '.join(redirect_chain)
-            except Exception:
-                pass
 
         parser = SmurfParser(parsed_url.netloc)
         try:
@@ -214,11 +220,51 @@ class Smurf(callbacks.Plugin):
 
         title = utils.str.normalizeWhitespace(''.join(parser.title()).strip())
         if title:
-            return (title, netloc)
+            return (title, parsed_url.netloc)
 
         # Quietly weep...
         return (None, None)
 
+    def getTitleTwitter(self, irc, msg, url, _parsed_url):
+        embed_url = f'https://publish.x.com/oembed?url={url}&omit_script=true'
+        timeout = self.registryValue('timeout', msg.channel, irc.network)
+        headers = conf.defaultHttpHeaders(irc.network, msg.channel)
+
+        with get(embed_url, timeout=timeout, headers=headers) as response:
+            text = response.text
+
+        response = loads(text)
+        soup = BeautifulSoup(response['html'], features='html.parser')
+
+        result = {}
+        result['text'] = soup.get_text(' ').strip()
+
+        # match = re.match(r'(.*) — (.*) \((.*)\) (.*)', result['text'])
+        # if match:
+        #     result['content'] = match.group(1)
+        #     result['name'] = match.group(2)
+        #     result['nick'] = match.group(3)
+        #     result['date'] = match.group(4)
+
+        #     template = self.registryValue('twitter.template', msg.channel, irc.network)
+        #     title = template.format_map(result)
+        #     return (title, 'x.com')
+
+        return (result['text'], 'x.com')
+
+
+    def getTitleYoutube(self, irc, msg, url, parsed_url):
+        # TODO: Implement me!
+        return self.getTitleDefault(irc, msg, url, parsed_url)
+
+    def getTitle(self, irc, msg, url, parsed_url = None):
+        if not parsed_url:
+            parsed_url = urlparse(url)
+
+        if parsed_url.netloc in self.handlers:
+            return self.handlers[parsed_url.netloc](irc, msg, url, parsed_url)
+
+        return self.getTitleDefault(irc, msg, url, parsed_url)
 
 class SmurfParser(utils.web.HtmlToText):
     entitydefs = entitydefs.copy()
