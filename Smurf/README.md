@@ -9,9 +9,10 @@ Fetches URL titles.
 | **plugins.smurf.enable**             | Enable the plugin.  Network-specific, channel-specific.                   |
 | **plugins.smurf.timeout**            | Fetch timeout in seconds.  Network-specific, channel-specific.            |
 | **plugins.smurf.reportErrors**       | Whether to report errors.  Network-specific, channel-specific.            |
-| **plugins.smurf.showRecirectChain**  | Whether to show full redirect chain.  Network-specific, channel-specific. |
 | **plugins.smurf.smurfMultipleURLs**  | Whether to smurf multiple URLs.  Network-specific, channel-specific.      |
+| **plugins.smurf.ignoreDomains**      | List of ignored domains.  Network-specific, channel-specific.             |
 | **plugins.smurf.ignoreUrlRegexp**    | Ignore URL regexp.  Network-specific, channel-specific.                   |
+| **plugins.smurf.template**           | Title message template.  Network-specific, channel-specific.              |
 
 ## Usage
 

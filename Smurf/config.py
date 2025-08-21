@@ -74,7 +74,7 @@ conf.registerChannelValue(
 conf.registerChannelValue(
     Smurf,
     'ignoreDomains',
-    registry.CommaSeparatedSetOfStrings(set(), _('Set of ignored domains')),
+    registry.CommaSeparatedSetOfStrings(set(), _('List of ignored domains')),
 )
 conf.registerChannelValue(
     Smurf,
