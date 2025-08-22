@@ -74,6 +74,34 @@ class Smurf(callbacks.Plugin):
         self.handlers['youtu.be']        = self.getTitleYouTube
         self.handlers['www.youtu.be']    = self.getTitleYouTube
 
+    @wrap([
+        'url',
+    ])
+    def smurf(self, irc, msg, _args, url):
+        '''<url>
+
+        Fetch title from URL
+        '''
+
+        report_errors = self.registryValue('reportErrors', msg.channel, irc.network)
+
+        try:
+            parsed_url = urlparse(url)
+            title = self.getTitle(irc, msg, url, parsed_url)
+            if title:
+                template = self.registryValue('template', msg.channel, irc.network)
+                reply = template.format_map({
+                    'title':  title,
+                    'domain': parsed_url.netloc,
+                })
+
+                irc.reply(reply)
+            else:
+                irc.reply(_('!! No title found'))
+        except SmurfException as e:
+            if report_errors:
+                irc.reply(_('!! Error fetching title for URL at %s: %s') % (e.domain, e.message))
+
     def doPrivmsg(self, irc, msg):
         if not msg.channel:
             return
@@ -111,48 +139,21 @@ class Smurf(callbacks.Plugin):
                 continue
 
             try:
-                title, domain = self.getTitle(irc, msg, url, parsed_url)
-                if title and domain:
+                title = self.getTitle(irc, msg, url, parsed_url)
+                if title:
                     template = self.registryValue('template', msg.channel, irc.network)
                     reply = template.format_map({
                         'title':  title,
-                        'domain': domain,
+                        'domain': parsed_url.netloc,
                     })
 
                     irc.reply(reply, prefixNick=False)
             except SmurfException as e:
                 if report_errors:
-                    irc.reply(_('!! Error fetching title for %s: %s') % (e.domain, e.message), prefixNick=False)
+                    irc.reply(_('!! Error fetching title for URL at %s: %s') % (e.domain, e.message), prefixNick=False)
 
             if not smurf_multiple_urls:
                 break
-
-    @wrap([
-        'url',
-    ])
-    def smurf(self, irc, msg, _args, url):
-        '''<url>
-
-        Fetch title from URL
-        '''
-
-        report_errors = self.registryValue('reportErrors', msg.channel, irc.network)
-
-        try:
-            (title, domain) = self.getTitle(irc, msg, url)
-            if title and domain:
-                template = self.registryValue('template', msg.channel, irc.network)
-                reply = template.format_map({
-                    'title':  title,
-                    'domain': domain,
-                })
-
-                irc.reply(reply)
-            else:
-                irc.reply(_('!! No title found'))
-        except SmurfException as e:
-            if report_errors:
-                irc.reply(_('!! Error fetching title for %s: %s') % (e.domain, e.message))
 
     def getEncoding(self, text):
         try:
@@ -180,8 +181,8 @@ class Smurf(callbacks.Plugin):
         headers = conf.defaultHttpHeaders(irc.network, msg.channel)
 
         if parsed_url.netloc in ('reddit.com', 'www.reddit.com', 'new.reddit.com'):
-            replaced_parsed_url = parsed_url._replace(netloc='old.reddit.com')
-            url = urlunparse(replaced_parsed_url)
+            replaced_url = parsed_url._replace(netloc='old.reddit.com')
+            url = urlunparse(replaced_url)
         elif parsed_url.netloc in ('github.com'):
             max_size = max(max_size, 65536)
         elif parsed_url.netloc in ('c0re.pfoo.org'):
@@ -200,18 +201,18 @@ class Smurf(callbacks.Plugin):
                     if size >= max_size:
                         break
                     if time() - t > timeout:
-                        self.log.error(_('Smurf: URL <%s> timed out'), url)
+                        self.log.error(_('Smurf: URL at %s timed out'), url)
                         raise SmurfException(parsed_url.netloc, _('Timeout'))
 
             try:
                 text = text.decode(self.getEncoding(text) or 'utf8', 'replace')
             except UnicodeDecodeError as e:
-                self.log.error(_('Smurf: URL <%s> - Cannot guess encoding'), url)
-                raise SmurfException(parsed_url.netloc, _('Cannot guess encoding')) from e
+                self.log.error(_('Smurf: URL at %s - Cannot determine encoding'), url)
+                raise SmurfException(parsed_url.netloc, _('Cannot determine encoding')) from e
         except SmurfException:
             raise
         except Exception as e:
-            self.log.error(_('Smurf: URL <%s> raised <%s>'), url, str(e))
+            self.log.error(_('Smurf: URL at %s raised error: %s'), url, str(e))
             raise SmurfException(parsed_url.netloc, str(e)) from e
 
         parser = SmurfParser(parsed_url.netloc)
@@ -224,52 +225,56 @@ class Smurf(callbacks.Plugin):
 
         title = utils.str.normalizeWhitespace(''.join(parser.title()).strip())
         if title:
-            return (title, parsed_url.netloc)
+            return title
 
         # Quietly weep...
-        return (None, None)
+        return None
 
     def getTitleTwitter(self, irc, msg, url, parsed_url):
         # Idea stolen from (now gone) https://github.com/oddluck/limnoria-plugins -> SpiffyTitles
-        embed_url = f'https://publish.x.com/oembed?url={url}&omit_script=true'
-        timeout = self.registryValue('timeout', msg.channel, irc.network)
-        headers = conf.defaultHttpHeaders(irc.network, msg.channel)
+        try:
+            embed_url = f'https://publish.x.com/oembed?url={url}&omit_script=true'
+            timeout = self.registryValue('timeout', msg.channel, irc.network)
+            headers = conf.defaultHttpHeaders(irc.network, msg.channel)
 
-        with get(embed_url, timeout=timeout, headers=headers) as response:
-            text = response.text
+            with get(embed_url, timeout=timeout, headers=headers) as response:
+                text = response.text
 
-        response = loads(text)
-        soup = BeautifulSoup(response['html'], features='html.parser')
+            response = loads(text)
+            soup = BeautifulSoup(response['html'], features='html.parser')
 
-        result = {}
-        result['text'] = soup.get_text(' ').strip()
+            result = {}
+            result['text'] = soup.get_text(' ').strip()
 
-        # match = re.match(r'(.*) — (.*) \((.*)\) (.*)', result['text'])
-        # if match:
-        #     result['content'] = match.group(1)
-        #     result['name'] = match.group(2)
-        #     result['nick'] = match.group(3)
-        #     result['date'] = match.group(4)
+            match = re.match(r'(.*) — (.*) \((.*)\) (.*)', result['text'])
+            if match:
+                result['content'] = match.group(1).strip()
+                result['name'] = match.group(2).strip()
+                result['nick'] = match.group(3).strip()
+                result['date'] = match.group(4).strip()
+                title = _('{name} ({nick}) on X: {content} [{date}]').format_map(result)
 
-        #     template = self.registryValue('twitter.template', msg.channel, irc.network)
-        #     title = template.format_map(result)
-        #     return (title, parsed_url.netloc)
+                return title
 
-        return (result['text'], parsed_url.netloc)
-
+            return result['text']
+        except Exception as e:
+            raise SmurfException(parsed_url.netloc, str(e)) from e
 
     def getTitleYouTube(self, irc, msg, url, parsed_url):
         # Idea came after `getTitleTwitter` as YouTube also has oEmbed
-        embed_url = f'https://www.youtube.com/oembed?url={url}&format=json'
-        timeout = self.registryValue('timeout', msg.channel, irc.network)
-        headers = conf.defaultHttpHeaders(irc.network, msg.channel)
+        try:
+            embed_url = f'https://www.youtube.com/oembed?url={url}&format=json'
+            timeout = self.registryValue('timeout', msg.channel, irc.network)
+            headers = conf.defaultHttpHeaders(irc.network, msg.channel)
 
-        with get(embed_url, timeout=timeout, headers=headers) as response:
-            text = response.text
+            with get(embed_url, timeout=timeout, headers=headers) as response:
+                text = response.text
 
-        response = loads(text)
+            response = loads(text)
 
-        return (response['title'], parsed_url.netloc)
+            return response['title']
+        except Exception as e:
+            raise SmurfException(parsed_url.netloc, str(e)) from e
 
     def getTitle(self, irc, msg, url, parsed_url = None):
         if not parsed_url:
