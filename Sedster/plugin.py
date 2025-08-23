@@ -36,6 +36,7 @@
 # pylint:disable=too-many-branches
 # pylint:disable=too-many-arguments
 # pylint:disable=inconsistent-return-statements
+# pyright:reportImplicitStringConcatenation=none
 
 from supybot import callbacks, ircdb, ircmsgs, ircutils, utils
 from supybot.commands import ProcessTimeoutError, process
@@ -121,7 +122,7 @@ class Sedster(callbacks.PluginRegexp):
         match = SEDSTER_REGEXP.search(escaped_expr)
 
         if not match:
-            return
+            raise ValueError('Invalid expression')
 
         groups = match.groupdict()
         pattern = groups['pattern'].replace('\0', delim)
@@ -162,7 +163,7 @@ class Sedster(callbacks.PluginRegexp):
         try:
             pattern, replacement, count, _flags = self._parse_regexp(msg.args[1])
         except Exception as e:
-            self.log.error(_('Sedster parser error: %s'), e, exc_info=True)
+            self.log.error(_('Sedster :: %s: %s'), str(type(e)), e, exc_info=True)
 
             if self.registryValue('displayErrors', msg.channel, irc.network):
                 errmsg = f'{e.__class__.__module__}:{e.__class__.__name__}: {e}'
@@ -187,19 +188,19 @@ class Sedster(callbacks.PluginRegexp):
                 cn='replacer',
             )
         except ProcessTimeoutError as e:
-            errmsg = _('Search timed out.')
+            errmsg = _('Sedster :: Search timed out')
             self.log.error(errmsg, e, exc_info=True)
 
             if self.registryValue('displayErrors', msg.channel, irc.network):
                 irc.error(errmsg)
         except SearchNotFoundError as e:
-            errmsg = _('Search not found in the last %i IRC messages on this network') % (len(irc.state.history))
+            errmsg = _('Sedster :: Search not found in the last %i IRC messages on this network') % (len(irc.state.history))
             self.log.error(errmsg, e, exc_info=True)
 
             if self.registryValue('displayErrors', msg.channel, irc.network):
                 irc.error(errmsg)
         except Exception as e:
-            errmsg = f'{e.__class__.__module__}:{e.__class__.__name__}: {e}'
+            errmsg = f'Sedster :: {e.__class__.__module__}:{e.__class__.__name__}: {e}'
             self.log.error(errmsg, e, exc_info=True)
 
             if self.registryValue('displayErrors', msg.channel, irc.network):
@@ -230,7 +231,7 @@ class Sedster(callbacks.PluginRegexp):
 
             # Ignore messages containing a regexp if ignoreRegexps is on.
             if self.registryValue('ignoreRegexps', msg.channel, irc.network) and SEDSTER_REGEXP.match(m.args[1]):
-                self.log.debug(_('Skipping message %s because it is tagged as isRegex'), m.args[1])
+                self.log.debug(_('Sedster :: Skipping message %s because it is tagged as isRegex'), m.args[1])
                 continue
 
             # Do the replacements.
@@ -251,11 +252,15 @@ class Sedster(callbacks.PluginRegexp):
 
                     return _('<%s> %s') % (msg.nick, subst)
             except Exception as e:
-                self.log.warning(_('Sedster error: %s'), e, exc_info=True)
+                self.log.warning(_('Sedster :: %s: %s'), str(type(e)), e, exc_info=True)
                 raise
 
-        self.log.debug(_('Sedster: Search %r not found in the last %i messages of %s.'),
-                       msg.args[1], len(irc.state.history), msg.args[0])
+        self.log.debug(
+            _('Sedster :: Search %r not found in the last %i messages of %s'),
+            msg.args[1],
+            len(irc.state.history),
+            msg.args[0],
+        )
         raise SearchNotFoundError()
 
 
