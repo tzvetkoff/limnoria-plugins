@@ -32,10 +32,13 @@
 # pylint:disable=missing-function-docstring
 # pylint:disable=too-many-ancestors
 # pylint:disable=too-many-arguments
+# pylint:disable=too-many-branches
 # pylint:disable=bare-except
 
-import json
+from os import name as osname
 from math import asin, cos, radians, sin, sqrt
+from signal import SIGINT, SIGTERM, signal
+from json import loads, dumps
 from threading import Thread
 from websocket import WebSocketApp
 
@@ -53,18 +56,22 @@ class EMSC(callbacks.Plugin):
     '''Sends near-realtime notifications about earthquakes in a configured area.'''
     threaded = True
     ws = None
+    prev_sigint_handler = None
+    prev_sigterm_handler = None
 
     def __init__(self, irc):
         '''Initialize the plugin internal variables'''
         super().__init__(irc)
+
+        self.log.info('EMSC :: Plugin loaded :: Opening EMSC connection')
         self.websocket_start()
 
     def __del__(self):
-        self.log.info('Received `del` :: Terminating EMSC connection')
+        self.log.info('EMSC :: Received `del` :: Terminating EMSC connection')
         self.websocket_stop()
 
     def die(self):
-        self.log.info('Received `.die()` :: Terminating EMSC connection')
+        self.log.info('EMSC :: Received `.die()` :: Terminating EMSC connection')
         self.websocket_stop()
 
     def on_websocket_message(self, _ws, message):
@@ -98,8 +105,8 @@ class EMSC(callbacks.Plugin):
         #         }
         #     }
         # }
-        msg = json.loads(message)
-        self.log.info('Received EMSC event: %s', json.dumps(msg, separators=(',', ':')))
+        msg = loads(message)
+        self.log.info('EMSC :: Received EMSC event: %s', dumps(msg, separators=(',', ':')))
 
         if msg['action'] != 'create':
             return
@@ -203,10 +210,14 @@ class EMSC(callbacks.Plugin):
             )
             Thread(target=self.ws.run_forever, kwargs={'reconnect': 5}).start()
 
+            self.install_signal_handlers()
+
     def websocket_stop(self):
         if self.ws is not None:
             self.ws.close()
             self.ws = None
+
+            self.remove_signal_handlers()
 
     def websocket_restart(self):
         self.websocket_stop()
@@ -214,6 +225,38 @@ class EMSC(callbacks.Plugin):
 
     def websocket_feed(self, text):
         self.on_websocket_message(self.ws, text)
+
+    def sigint_handler(self, sig, frame):
+        self.log.info('EMSC :: Received `SIGINT` :: Terminating EMSC connection')
+
+        if self.ws is not None:
+            self.ws.close()
+            self.ws = None
+
+        if callable(self.prev_sigint_handler):
+            self.prev_sigint_handler(sig, frame)
+
+    def sigterm_handler(self, sig, frame):
+        self.log.info('EMSC :: Received `SIGTERM` :: Terminating EMSC connection')
+
+        if self.ws is not None:
+            self.ws.close()
+            self.ws = None
+
+        if callable(self.prev_sigterm_handler):
+            self.prev_sigterm_handler(sig, frame)
+
+    def install_signal_handlers(self):
+        if osname == 'posix':
+            self.prev_sigint_handler = signal(SIGINT, self.sigint_handler)
+            self.prev_sigterm_handler = signal(SIGTERM, self.sigterm_handler)
+
+    def remove_signal_handlers(self):
+        if osname == 'posix':
+            signal(SIGINT, self.prev_sigint_handler)
+            self.prev_sigint_handler = None
+            signal(SIGTERM, self.prev_sigterm_handler)
+            self.prev_sigterm_handler = None
 
 
 Class = EMSC
