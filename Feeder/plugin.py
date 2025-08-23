@@ -81,7 +81,7 @@ class Feeder(callbacks.Plugin):
             try:
                 response = parse(feeds[feed]['url'])
             except Exception as e:
-                self.log.exception('Error refreshing feed %s: %s', feed, e)
+                self.log.error('Feeder :: Error refreshing feed %s :: %s: %s', feed, str(type(e)), e)
                 continue
 
             entries = response['entries']
