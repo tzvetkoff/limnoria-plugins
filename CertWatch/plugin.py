@@ -104,19 +104,19 @@ class CertWatch(callbacks.Plugin):
         try:
             pem = ssl.get_server_certificate((host, port), timeout=self.registryValue('timeout'))
         except (OSError, ssl.SSLError) as e:
-            self.log.warning('Could not fetch certificate from %s:%d -- %s', host, port, e)
+            self.log.warning('CertWatch :: Could not fetch certificate from %s:%d -- %s', host, port, e)
             return None
 
         try:
             cert = x509.load_pem_x509_certificate(pem.encode(), default_backend)
         except ValueError as e:
-            self.log.warning('Could not parse certificate from %s:%s -- %s', host, port, e)
+            self.log.warning('CertWatch :: Could not parse certificate from %s:%s -- %s', host, port, e)
             return None
 
         try:
             cn = cert.subject.get_attributes_for_oid(NameOID.COMMON_NAME)[0].value
         except IndexError:
-            self.log.warning('Certificate from %s:%s does not contain a common name', host, port)
+            self.log.warning('CertWatch :: Certificate from %s:%s does not contain a common name', host, port)
             return None
 
         alt = []
