@@ -201,18 +201,18 @@ class Smurf(callbacks.Plugin):
                     if size >= max_size:
                         break
                     if time() - t > timeout:
-                        self.log.error(_('Smurf: URL <%s>: Timeout'), url)
+                        self.log.error(_('Smurf :: URL <%s> :: Timeout'), url)
                         raise SmurfException(parsed_url.netloc, _('Timeout'))
 
             try:
                 text = text.decode(self.getEncoding(text) or 'utf8', 'replace')
             except UnicodeDecodeError as e:
-                self.log.error(_('Smurf: URL <%s>: Cannot determine encoding'), url)
+                self.log.error(_('Smurf :: URL <%s> :: Cannot determine encoding'), url)
                 raise SmurfException(parsed_url.netloc, _('Cannot determine encoding')) from e
         except SmurfException:
             raise
         except Exception as e:
-            self.log.error(_('Smurf: URL <%s>: %s: %s'), url, type(e).__name__, str(e))
+            self.log.error(_('Smurf :: URL <%s> :: %s: %s'), url, type(e).__name__, str(e))
             raise SmurfException(parsed_url.netloc, str(e)) from e
 
         parser = SmurfParser(parsed_url.netloc)
@@ -258,7 +258,7 @@ class Smurf(callbacks.Plugin):
 
             return result['text']
         except Exception as e:
-            self.log.error(_('Smurf: URL <%s>: %s: %s'), url, type(e).__name__, str(e))
+            self.log.error(_('Smurf :: URL <%s> :: %s: %s'), url, type(e).__name__, str(e))
             raise SmurfException(parsed_url.netloc, str(e)) from e
 
     def getTitleYouTube(self, irc, msg, url, parsed_url):
@@ -275,7 +275,7 @@ class Smurf(callbacks.Plugin):
 
             return response['title']
         except Exception as e:
-            self.log.error(_('Smurf: URL <%s>: %s: %s'), url, type(e).__name__, str(e))
+            self.log.error(_('Smurf :: URL <%s> :: %s: %s'), url, type(e).__name__, str(e))
             raise SmurfException(parsed_url.netloc, str(e)) from e
 
     def getTitle(self, irc, msg, url, parsed_url = None):
