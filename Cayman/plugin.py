@@ -105,7 +105,7 @@ class Cayman(callbacks.Plugin):
         if last_message_timestamp:
             seconds_since_last_message = (now - last_message_timestamp).total_seconds()
             if seconds_since_last_message < self.registryValue('throttle', msg.channel, irc.network):
-                self.log.info('Cayman throttled.')
+                self.log.info('Cayman :: Throttled')
                 return
 
         link_chance = self.registryValue('linkChance', msg.channel, irc.network)
