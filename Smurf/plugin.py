@@ -245,6 +245,7 @@ class Smurf(callbacks.Plugin):
 
             result = {}
             result['text'] = soup.get_text(' ').strip()
+            result['text'] = result['text'].replace('pic.twitter.com/', 'pic.x.com/')
 
             match = re.match(r'(.*) — (.*) \((.*)\) (.*)', result['text'])
             if match:
