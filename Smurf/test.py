@@ -84,7 +84,7 @@ class SmurfTestCase(ChannelPluginTestCase):
 
     @unittest.skipUnless(network, 'smurf tests require networking')
     def testSmurf004Twitter(self):
-        self.assertSnarfResponse('https://x.com/QuotesFuturama/status/1825513336236109929', '>> Futurama Quotes (@QuotesFuturama) on X: Marquita Maria Christina Chiquita Alana Paloma Ramona Rosita Catalina Lupe Martes Miercoles Jueves Viernes Sabado Domingo Veronica Helena Hermina Francesca Esperanza Valentina Carmelita Leonora Lupita Isabella Juanita Teresa Sofia Mariana Benihana Bonita Nereida Guadalupe Alvarez  pic.x.com/CnqpQslRoB [August 19, 2024] (at x.com)')
+        self.assertSnarfResponse('https://x.com/QuotesFuturama/status/1825513336236109929', '>> Futurama Quotes (@QuotesFuturama) on X: Marquita Maria Christina Chiquita Alana Paloma Ramona Rosita Catalina Lupe Martes Miercoles Jueves Viernes Sabado Domingo Veronica Helena Hermina Francesca Esperanza Valentina Carmelita Leonora Lupita Isabella Juanita Teresa Sofia Mariana Benihana Bonita Nereida Guadalupe Alvarez https://pic.x.com/CnqpQslRoB [August 19, 2024] (at x.com)')
 
     @unittest.skipUnless(network, 'smurf tests require networking')
     def testSmurf005YouTube(self):
