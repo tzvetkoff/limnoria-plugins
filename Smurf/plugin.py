@@ -100,7 +100,8 @@ class Smurf(callbacks.Plugin):
                 irc.reply(_('!! No title found'))
         except SmurfException as e:
             if report_errors:
-                irc.reply(_('!! Error fetching title for URL at %s: %s') % (e.domain, e.message))
+                reply = _('!! Error fetching title for URL at %s: %s: %s') % (e.domain, str(type(e)), e.message)
+                irc.reply(reply)
 
     def doPrivmsg(self, irc, msg):
         if not msg.channel:
@@ -150,7 +151,8 @@ class Smurf(callbacks.Plugin):
                     irc.reply(reply, prefixNick=False)
             except SmurfException as e:
                 if report_errors:
-                    irc.reply(_('!! Error fetching title for URL at %s: %s') % (e.domain, e.message), prefixNick=False)
+                    reply = _('!! Error fetching title for URL at %s: %s: %s') % (e.domain, str(type(e)), e.message)
+                    irc.reply(reply, prefixNick=False)
 
             if not smurf_multiple_urls:
                 break
@@ -241,6 +243,11 @@ class Smurf(callbacks.Plugin):
                 text = response.text
 
             response = loads(text)
+
+            if 'error' in response:
+                if response['error'] == 'Sorry, you are not authorized to see this status.':
+                    return None
+
             soup = BeautifulSoup(response['html'], features='html.parser')
 
             result = {}
