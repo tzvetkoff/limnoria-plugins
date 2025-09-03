@@ -39,7 +39,7 @@ import re
 from time import time
 from json import loads
 from html.entities import entitydefs
-from urllib.parse import urlparse, urlunparse
+from urllib.parse import urlparse, urlunparse, quote
 from requests import get
 from bs4 import BeautifulSoup
 
@@ -235,7 +235,12 @@ class Smurf(callbacks.Plugin):
     def getTitleTwitter(self, irc, msg, url, parsed_url):
         # Idea stolen from (now gone) https://github.com/oddluck/limnoria-plugins -> SpiffyTitles
         try:
-            embed_url = f'https://publish.x.com/oembed?url={url}&omit_script=true'
+            quoted_url = url
+            quoted_url = re.sub(r'\?.*$', '', quoted_url)
+            quoted_url = re.sub(r'/photo/\d+$', '', quoted_url)
+            quoted_url = re.sub(r'/video/\d+$', '', quoted_url)
+            quoted_url = quote(quoted_url)
+            embed_url = f'https://publish.x.com/oembed?url={quoted_url}&omit_script=true'
             timeout = self.registryValue('timeout', msg.channel, irc.network)
             headers = conf.defaultHttpHeaders(irc.network, msg.channel)
 
