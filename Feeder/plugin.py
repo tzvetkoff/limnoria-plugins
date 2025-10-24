@@ -39,12 +39,14 @@
 # pylint:disable=invalid-name
 # pylint:disable=broad-exception-caught
 
+
 import json
 import os
 import re
 
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
+from requests import get
 from feedparser import parse
 
 from supybot import callbacks, conf, ircmsgs, world
@@ -79,7 +81,14 @@ class Feeder(callbacks.Plugin):
 
         for feed in feeds:
             try:
-                response = parse(feeds[feed]['url'])
+                timeout = self.registryValue('timeout')
+                if 'timeout' in feeds[feed]:
+                    timeout = feeds[feed]['timeout']
+
+                with get(feeds[feed]['url'], timeout=timeout) as response:
+                    text = response.text
+
+                response = parse(text)
             except Exception as e:
                 self.log.error('Feeder :: Error refreshing feed %s :: %s: %s', feed, str(type(e)), e)
                 continue
@@ -300,10 +309,10 @@ class Feeder(callbacks.Plugin):
             def set(self, irc, _msg, _args, name, key, value):
                 '''<name> <key> <value>
 
-                Sets a feed metadata field. One of: title, format, url, ignore
+                Sets a feed metadata field. One of: title, format, timeout, ignore, url
                 '''
 
-                if key not in ['title', 'format', 'url', 'ignore']:
+                if key not in ['title', 'format', 'timeout', 'ignore', 'url']:
                     msg = _('Metadata {key} not allowed.').format_map({
                         'key': key,
                     })
@@ -317,6 +326,13 @@ class Feeder(callbacks.Plugin):
                         re.compile(value)
                     except re.PatternError:
                         irc.reply(_('Invalid regex.'))
+                        return
+
+                if key == 'timeout':
+                    try:
+                        value = float(value)
+                    except ValueError:
+                        irc.reply(_('Invalid float.'))
                         return
 
                 with plugin.registryValue('feeds', value=False).editable() as feeds:
@@ -337,9 +353,9 @@ class Feeder(callbacks.Plugin):
             def unset(self, irc, _msg, _args, name, key):
                 '''<name> <key>
 
-                Unsets a feed metadata field. One of: title, format.'''
+                Unsets a feed metadata field. One of: title, format, timeout, ignore.'''
 
-                if key not in ['title', 'format']:
+                if key not in ['title', 'format', 'timeout', 'ignore']:
                     msg = _('Metadata {key} not allowed.').format_map({
                         'key': key,
                     })
