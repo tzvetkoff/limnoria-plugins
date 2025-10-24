@@ -90,7 +90,7 @@ class Feeder(callbacks.Plugin):
 
                 response = parse(text)
             except Exception as e:
-                self.log.error('Feeder :: Error refreshing feed %s :: %s: %s', feed, str(type(e)), e)
+                self.log.exception('Feeder :: Error refreshing feed %s :: %s: %s', feed, str(type(e)), e)
                 continue
 
             entries = response['entries']
@@ -215,6 +215,8 @@ class Feeder(callbacks.Plugin):
                 'restart': plugin.scheduler_restart,
                 'refresh': plugin.scheduler_refresh,
             }[op]()
+
+            irc.replySuccess()
 
         class feeds(callbacks.Commands):
             @wrap([
