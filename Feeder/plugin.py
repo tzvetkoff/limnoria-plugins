@@ -95,17 +95,19 @@ class Feeder(callbacks.Plugin):
 
             entries = response['entries']
 
+            if 'ignore' in feeds[feed]:
+                try:
+                    regexp = re.compile(feeds[feed]['ignore'])
+                    entries = [entry for entry in entries if not regexp.match(entry['title'])]
+                except re.PatternError:
+                    pass
+
             for irc in world.ircs:
+                limit = self.registryValue('lastN', network=irc.network)
+                last_n = entries[0:limit]
+
                 for channel in self.registryValue('announces', network=irc.network):
-                    last_n = self.registryValue('lastN', network=irc.network)
-                    last_n_entries = entries[0:last_n]
-
-                    for entry in last_n_entries:
-                        if 'ignore' in feeds[feed]:
-                            regexp = re.compile(feeds[feed]['ignore'])
-                            if regexp.match(entry['title']):
-                                continue
-
+                    for entry in last_n:
                         if 'summary' in entry:
                             del entry['summary']
                         if 'content' in entry:
