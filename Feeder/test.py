@@ -116,4 +116,9 @@ class FeederTestCase(ChannelPluginTestCase):
         self.assertRegexp('feeder announces remove #test kernel', r'The operation succeeded')
         self.assertEqual(conf.supybot.plugins.feeder.announces.getSpecific(network='test')(), {})
 
+    def test015CommandAnnouncesSanitize(self):
+        conf.supybot.plugins.feeder.announces.getSpecific(network='test').set('{"#ztest": ["foobar"]}')
+        self.assertRegexp('feeder announces sanitize', r'The operation succeeded')
+        self.assertEqual(conf.supybot.plugins.feeder.announces.getSpecific(network='test')(), {})
+
 # vim:ft=python:ts=4:sts=4:sw=4:et:tw=119

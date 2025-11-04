@@ -59,7 +59,7 @@ except ImportError:
         return x
 
 
-AnnouncedFilename = conf.supybot.directories.data.dirize('Feeder.flat')
+HistoryFilename = conf.supybot.directories.data.dirize('Feeder.flat')
 
 
 class Feeder(callbacks.Plugin):
@@ -77,7 +77,7 @@ class Feeder(callbacks.Plugin):
 
     def refresh(self):
         feeds = self.registryValue('feeds')
-        announced = self.load_announced()
+        history = self.load_history()
 
         for feed in feeds:
             try:
@@ -96,79 +96,89 @@ class Feeder(callbacks.Plugin):
             entries = response['entries']
 
             for irc in world.ircs:
-                with self.registryValue('announces', network=irc.network, value=False).editable() as announces:
-                    for channel in announces:
-                        if channel not in irc.state.channels:
-                            del announces[channel]
-                            continue
+                for channel in self.registryValue('announces', network=irc.network):
+                    last_n = self.registryValue('lastN', network=irc.network)
+                    last_n_entries = entries[0:last_n]
 
-                        if feed in announces[channel]:
-                            last_n = self.registryValue('lastN', network=irc.network)
-                            last_n_entries = entries[0:last_n]
+                    for entry in last_n_entries:
+                        if 'ignore' in feeds[feed]:
+                            regexp = re.compile(feeds[feed]['ignore'])
+                            if regexp.match(entry['title']):
+                                continue
 
-                            for entry in last_n_entries:
-                                if 'ignore' in feeds[feed]:
-                                    regexp = re.compile(feeds[feed]['ignore'])
-                                    if regexp.match(entry['title']):
-                                        continue
+                        if 'summary' in entry:
+                            del entry['summary']
+                        if 'content' in entry:
+                            del entry['content']
 
-                                if 'summary' in entry:
-                                    del entry['summary']
-                                if 'content' in entry:
-                                    del entry['content']
+                        entry['feed'] = feed
+                        if 'title' in feeds[feed]:
+                            entry['feed'] = feeds[feed]['title']
 
-                                entry['feed'] = feed
-                                if 'title' in feeds[feed]:
-                                    entry['feed'] = feeds[feed]['title']
+                        fmt = self.registryValue('format', network=irc.network)
+                        if 'format' in feeds[feed]:
+                            fmt = feeds[feed]['format']
 
-                                fmt = self.registryValue('format', network=irc.network)
-                                if 'format' in feeds[feed]:
-                                    fmt = feeds[feed]['format']
+                        network = str(irc.network)
+                        if network not in history:
+                            history[network] = {}
 
-                                network = str(irc.network)
-                                if network not in announced:
-                                    announced[network] = {}
+                        channel = str(channel)
+                        if channel not in history[network]:
+                            history[network][channel] = {}
 
-                                channel = str(channel)
-                                if channel not in announced[network]:
-                                    announced[network][channel] = {}
+                        if feed not in history[network][channel]:
+                            history[network][channel][feed] = []
 
-                                if feed not in announced[network][channel]:
-                                    announced[network][channel][feed] = []
+                        entry_id = None
+                        if 'id' in entry:
+                            entry_id = entry['id']
+                        else:
+                            entry_id = entry['link']
 
-                                entry_id = None
-                                if 'id' in entry:
-                                    entry_id = entry['id']
-                                else:
-                                    entry_id = entry['link']
+                        if entry_id not in history[network][channel][feed]:
+                            history[network][channel][feed].append(entry_id)
 
-                                if entry_id not in announced[network][channel][feed]:
-                                    announced[network][channel][feed].append(entry_id)
+                            msg = fmt.format_map(entry)
+                            irc.queueMsg(ircmsgs.privmsg(channel, msg))
 
-                                    msg = fmt.format_map(entry)
-                                    irc.queueMsg(ircmsgs.privmsg(channel, msg))
+        self.save_history(history)
 
-        self.save_announced(announced)
-
-    def load_announced(self):
+    def load_history(self):
         try:
-            with open(AnnouncedFilename, 'r', encoding='utf-8') as f:
+            with open(HistoryFilename, 'r', encoding='utf-8') as f:
                 return json.load(f)
         except:
             return {}
 
-    def save_announced(self, announced):
-        for network in announced:
-            for channel in announced[network]:
-                for feed in announced[network][channel]:
-                    history = self.registryValue('history', network=network)
+    def save_history(self, history):
+        feeds = self.registryValue('feeds')
 
-                    if len(announced[network][channel][feed]) > history:
-                        announced[network][channel][feed] = announced[network][channel][feed][-history:]
+        for network in history:
+            irc = world.getIrc(network)
+
+            if not irc:
+                del history[network]
+            else:
+                for channel in history[network]:
+                    if not channel in irc.state.channels:
+                        del history[network][channel]
+                    else:
+                        for feed in history[network][channel]:
+                            if not feeds[feed]:
+                                del history[network][channel][feed]
+
+        for network in history:
+            limit = self.registryValue('history', network=network)
+
+            for channel in history[network]:
+                for feed in history[network][channel]:
+                    if len(history[network][channel][feed]) > limit:
+                        history[network][channel][feed] = history[network][channel][feed][-limit:]
 
         try:
-            with open(AnnouncedFilename, 'w', encoding='utf-8') as f:
-                json.dump(announced, f, indent=2)
+            with open(HistoryFilename, 'w', encoding='utf-8') as f:
+                json.dump(history, f, indent=2)
         except:
             pass
 
@@ -191,7 +201,7 @@ class Feeder(callbacks.Plugin):
 
     def scheduler_refresh(self):
         try:
-            os.remove(AnnouncedFilename)
+            os.remove(HistoryFilename)
         except:
             pass
 
@@ -287,8 +297,7 @@ class Feeder(callbacks.Plugin):
             def remove(self, irc, _msg, _args, name):
                 '''<name>
 
-                Removes a feed
-                '''
+                Removes a feed'''
 
                 plugin = irc.getCallback('Feeder')
 
@@ -311,8 +320,7 @@ class Feeder(callbacks.Plugin):
             def set(self, irc, _msg, _args, name, key, value):
                 '''<name> <key> <value>
 
-                Sets a feed metadata field. One of: title, format, timeout, ignore, url
-                '''
+                Sets a feed metadata field. One of: title, format, timeout, ignore, url'''
 
                 if key not in ['title', 'format', 'timeout', 'ignore', 'url']:
                     msg = _('Metadata {key} not allowed.').format_map({
@@ -329,8 +337,7 @@ class Feeder(callbacks.Plugin):
                     except re.PatternError:
                         irc.reply(_('Invalid regex.'))
                         return
-
-                if key == 'timeout':
+                elif key == 'timeout':
                     try:
                         value = float(value)
                     except ValueError:
@@ -515,16 +522,33 @@ class Feeder(callbacks.Plugin):
                 else:
                     network = str(irc.network)
                     channel = str(channel)
-                    announced = plugin.load_announced()
+                    history = plugin.load_history()
 
-                    if network in announced:
-                        if channel in announced[network]:
-                            if name in announced[network][channel]:
-                                del announced[network][channel][name]
+                    if network in history:
+                        if channel in history[network]:
+                            if name in history[network][channel]:
+                                del history[network][channel][name]
 
-                    plugin.save_announced(announced)
+                    plugin.save_history(history)
 
                     irc.replySuccess()
+
+            @wrap([
+                'admin'
+            ])
+            def sanitize(self, irc, _msg, _args):
+                '''no arguments
+
+                Sanitizes the announces configuration'''
+
+                plugin = irc.getCallback('Feeder')
+
+                with plugin.registryValue('announces', network=irc.network, value=False).editable() as announces:
+                    for channel in announces.copy():
+                        if channel not in irc.state.channels:
+                            del announces[channel]
+
+                irc.replySuccess()
 
         class announce(announces):
             def listCommands(self, pluginCommands=...):
