@@ -98,7 +98,7 @@ class Feeder(callbacks.Plugin):
             if 'ignore' in feeds[feed]:
                 try:
                     regexp = re.compile(feeds[feed]['ignore'])
-                    entries = [entry for entry in entries if not regexp.match(entry['title'])]
+                    entries = [entry for entry in entries if not regexp.search(entry['title'])]
                 except re.PatternError:
                     pass
 
