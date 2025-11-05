@@ -105,6 +105,7 @@ class Feeder(callbacks.Plugin):
             for irc in world.ircs:
                 limit = self.registryValue('lastN', network=irc.network)
                 last_n = entries[0:limit]
+                last_n.reverse()
 
                 for channel in self.registryValue('announces', network=irc.network):
                     for entry in last_n:
@@ -139,7 +140,7 @@ class Feeder(callbacks.Plugin):
                             entry_id = entry['link']
 
                         if entry_id not in history[network][channel][feed]:
-                            history[network][channel][feed].append(entry_id)
+                            history[network][channel][feed].insert(0, entry_id)
 
                             msg = fmt.format_map(entry)
                             irc.queueMsg(ircmsgs.privmsg(channel, msg))
@@ -176,7 +177,7 @@ class Feeder(callbacks.Plugin):
             for channel in history[network]:
                 for feed in history[network][channel]:
                     if len(history[network][channel][feed]) > limit:
-                        history[network][channel][feed] = history[network][channel][feed][-limit:]
+                        history[network][channel][feed] = history[network][channel][feed][0:limit]
 
         try:
             with open(HistoryFilename, 'w', encoding='utf-8') as f:
