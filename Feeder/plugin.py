@@ -46,8 +46,10 @@ import re
 
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
-from requests import get
+from requests.adapters import HTTPAdapter
+from requests.sessions import Session
 from feedparser import parse as parse_feed, USER_AGENT as DEFAULT_USER_AGENT
+from urllib3 import Retry
 
 from supybot import callbacks, conf, ircmsgs, world
 from supybot.commands import wrap
@@ -90,13 +92,19 @@ class Feeder(callbacks.Plugin):
                 if 'user_agent' in feeds[feed]:
                     headers['User-Agent'] = feeds[feed]['user_agent']
 
-                with get(feeds[feed]['url'], timeout=timeout, headers=headers) as response:
+                sess = Session()
+                retries = Retry(connect=5, read=5, redirect=5, status=5, other=5, backoff_factor=1.0)
+                sess.mount('http://', HTTPAdapter(max_retries=retries))
+
+                with sess.get(feeds[feed]['url'], timeout=timeout, headers=headers) as response:
                     text = response.text
 
                 response = parse_feed(text)
             except Exception as e:
-                self.log.exception('Feeder :: Error refreshing feed %s :: %s: %s', feed, str(type(e)), e)
+                self.log.error('Feeder :: Error refreshing feed %s :: %s: %s', feed, str(type(e)), e)
                 continue
+            finally:
+                sess.close()    # pyright:ignore[reportPossiblyUnboundVariable]
 
             entries = response['entries']
 
