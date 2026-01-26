@@ -47,7 +47,7 @@ import re
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
 from requests import get
-from feedparser import parse
+from feedparser import parse as parse_feed, USER_AGENT as DEFAULT_USER_AGENT
 
 from supybot import callbacks, conf, ircmsgs, world
 from supybot.commands import wrap
@@ -85,10 +85,15 @@ class Feeder(callbacks.Plugin):
                 if 'timeout' in feeds[feed]:
                     timeout = feeds[feed]['timeout']
 
-                with get(feeds[feed]['url'], timeout=timeout) as response:
+                headers = conf.defaultHttpHeaders(None, None)
+                headers['User-Agent'] = DEFAULT_USER_AGENT
+                if 'user_agent' in feeds[feed]:
+                    headers['User-Agent'] = feeds[feed]['user_agent']
+
+                with get(feeds[feed]['url'], timeout=timeout, headers=headers) as response:
                     text = response.text
 
-                response = parse(text)
+                response = parse_feed(text)
             except Exception as e:
                 self.log.exception('Feeder :: Error refreshing feed %s :: %s: %s', feed, str(type(e)), e)
                 continue
@@ -323,9 +328,9 @@ class Feeder(callbacks.Plugin):
             def set(self, irc, _msg, _args, name, key, value):
                 '''<name> <key> <value>
 
-                Sets a feed metadata field. One of: title, format, timeout, ignore, url'''
+                Sets a feed metadata field. One of: title, format, timeout, ignore, url, user_agent'''
 
-                if key not in ['title', 'format', 'timeout', 'ignore', 'url']:
+                if key not in ['title', 'format', 'timeout', 'ignore', 'url', 'user_agent']:
                     msg = _('Metadata {key} not allowed.').format_map({
                         'key': key,
                     })
@@ -442,7 +447,7 @@ class Feeder(callbacks.Plugin):
                     return
 
                 with plugin.registryValue('announces', network=irc.network, value=False).editable() as announces:
-                    announces[channel] = list(set(announces.get(channel, []) + [name]))
+                    announces[channel] = list(dict.fromkeys(announces.get(channel, []) + [name]))
 
                 irc.replySuccess()
 
