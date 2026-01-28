@@ -83,7 +83,7 @@ class CertWatch(callbacks.Plugin):
                         continue
 
                     message_format = None
-                    if cert_info['days'] >= 2 and cert_info['days'] <= 15:
+                    if cert_info['days'] >= 2 and cert_info['days'] <= 10:
                         message_format = self.registryValue('messageFormatExpiringMany', channel, irc.network)
                     elif cert_info['days'] == 1:
                         message_format = self.registryValue('messageFormatExpiringOne', channel, irc.network)
