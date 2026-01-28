@@ -50,6 +50,7 @@ from requests.adapters import HTTPAdapter
 from requests.sessions import Session
 from feedparser import parse as parse_feed, USER_AGENT as DEFAULT_USER_AGENT
 from urllib3 import Retry
+from urllib3.exceptions import ProtocolError
 
 from supybot import callbacks, conf, ircmsgs, world
 from supybot.commands import wrap
@@ -62,6 +63,35 @@ except ImportError:
 
 
 HistoryFilename = conf.supybot.directories.data.dirize('Feeder.flat')
+
+
+class LoggableRetry(Retry):
+    def __init__(self, *args, **kwargs):
+        self.feed = kwargs['feed']
+        self.logger = kwargs['logger']
+        del kwargs['feed'], kwargs['logger']
+
+        super().__init__(*args, **kwargs)
+
+    def _is_connection_error(self, err):
+        if isinstance(err, (ProtocolError)):
+            return True
+
+        return super()._is_connection_error(err)
+
+    def new(self, **kwargs):
+        kwargs['feed'] = self.feed
+        kwargs['logger'] = self.logger
+
+        return super().new(**kwargs)
+
+    def increment(self, *args, **kwargs):
+        new_retry = super().increment(*args, **kwargs)
+
+        e = kwargs['error']
+        self.logger.warning('Feeder :: Will retry refreshing feed %s :: %s: %s', self.feed, str(type(e)), e)
+
+        return new_retry
 
 
 class Feeder(callbacks.Plugin):
@@ -93,7 +123,17 @@ class Feeder(callbacks.Plugin):
                     headers['User-Agent'] = feeds[feed]['user_agent']
 
                 sess = Session()
-                retries = Retry(connect=5, read=5, redirect=5, status=5, other=5, backoff_factor=1.0)
+                retries = LoggableRetry(
+                    connect=5,
+                    read=5,
+                    redirect=5,
+                    status=5,
+                    other=5,
+                    backoff_factor=1.0,
+                    feed=feed,
+                    logger=self.log,
+                )
+                sess.mount('https://', HTTPAdapter(max_retries=retries))
                 sess.mount('http://', HTTPAdapter(max_retries=retries))
 
                 with sess.get(feeds[feed]['url'], timeout=timeout, headers=headers) as response:
