@@ -56,7 +56,7 @@ class Cayman(callbacks.Plugin):
 
     def _gif(self, channel, network):
         timeout = self.registryValue('timeout', channel, network)
-        with requests.get('http://edgecats.net/random', timeout=timeout) as response:
+        with requests.get('https://edgecats.net/random', timeout=timeout) as response:
             return response.text.replace('http://', 'https://')
 
     def _fact(self, channel, network):
