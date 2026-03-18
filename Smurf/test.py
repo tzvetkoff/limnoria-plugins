@@ -84,10 +84,23 @@ class SmurfTestCase(ChannelPluginTestCase):
 
     @unittest.skipUnless(network, 'smurf tests require networking')
     def testSmurf004Twitter(self):
-        self.assertSnarfResponse('https://x.com/QuotesFuturama/status/1825513336236109929', '>> Futurama Quotes (@QuotesFuturama) on X: Marquita Maria Christina Chiquita Alana Paloma Ramona Rosita Catalina Lupe Martes Miercoles Jueves Viernes Sabado Domingo Veronica Helena Hermina Francesca Esperanza Valentina Carmelita Leonora Lupita Isabella Juanita Teresa Sofia Mariana Benihana Bonita Nereida Guadalupe Alvarez https://pic.x.com/CnqpQslRoB [August 19, 2024] (at x.com)')
+        self.assertSnarfResponse(
+            'https://x.com/QuotesFuturama/status/1825513336236109929',
+            '>> Futurama Quotes (@QuotesFuturama) on X: Marquita Maria Christina Chiquita Alana Paloma Ramona Rosita Catalina Lupe Martes Miercoles Jueves Viernes Sabado Domingo Veronica Helena Hermina Francesca Esperanza Valentina Carmelita Leonora Lupita Isabella Juanita Teresa Sofia Mariana Benihana Bonita Nereida Guadalupe Alvarez https://pic.x.com/CnqpQslRoB [August 19, 2024] (at x.com)',
+        )
 
     @unittest.skipUnless(network, 'smurf tests require networking')
     def testSmurf005YouTube(self):
-        self.assertSnarfResponse('https://www.youtube.com/watch?v=cJygmsFYf9w', '>> Patlamaya Devam - Isyan Tetick - 1 Hour Alien Video - with english lyrics - ИНОПЛАНЕТЯНИН (at www.youtube.com)')
+        self.assertSnarfResponse(
+            'https://www.youtube.com/watch?v=cJygmsFYf9w',
+            '>> Patlamaya Devam - Isyan Tetick - 1 Hour Alien Video - with english lyrics - ИНОПЛАНЕТЯНИН (at www.youtube.com)',
+        )
+
+    @unittest.skipUnless(network, 'smurf tests require networking')
+    def testSmurf006Reddit(self):
+        self.assertSnarfResponse(
+            'https://www.reddit.com/r/theydidthemath/comments/1rkeuup/the_cost_of_breaking_traffic_rules_in_norway_vs/',
+            '>> The cost of breaking traffic rules in Norway vs in India [Offsite] (at www.reddit.com)',
+        )
 
 # vim:ft=python:ts=4:sts=4:sw=4:et:tw=119

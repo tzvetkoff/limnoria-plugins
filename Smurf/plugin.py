@@ -59,6 +59,7 @@ class Smurf(callbacks.Plugin):
     threaded = True
 
     handlers = {}
+    oembed = {}
 
     def __init__(self, irc):
         '''Initialize the plugin internal variables'''
@@ -69,14 +70,14 @@ class Smurf(callbacks.Plugin):
         self.handlers['twitter.com']     = self.getTitleTwitter
         self.handlers['www.twitter.com'] = self.getTitleTwitter
 
-        self.handlers['youtube.com']     = self.getTitleYouTube
-        self.handlers['www.youtube.com'] = self.getTitleYouTube
-        self.handlers['youtu.be']        = self.getTitleYouTube
-        self.handlers['www.youtu.be']    = self.getTitleYouTube
+        self.oembed['youtube.com']     = 'https://www.youtube.com/oembed?url={url}&format=json'
+        self.oembed['www.youtube.com'] = 'https://www.youtube.com/oembed?url={url}&format=json'
+        self.oembed['youtu.be']        = 'https://www.youtube.com/oembed?url={url}&format=json'
+        self.oembed['www.youtu.be']    = 'https://www.youtube.com/oembed?url={url}&format=json'
 
-        self.handlers['reddit.com']     = self.getTitleReddit
-        self.handlers['www.reddit.com'] = self.getTitleReddit
-        self.handlers['new.reddit.com'] = self.getTitleReddit
+        self.oembed['reddit.com']     = 'https://www.reddit.com/oembed?url={url}'
+        self.oembed['www.reddit.com'] = 'https://www.reddit.com/oembed?url={url}'
+        self.oembed['new.reddit.com'] = 'https://www.reddit.com/oembed?url={url}'
 
     @wrap([
         'url',
@@ -244,11 +245,11 @@ class Smurf(callbacks.Plugin):
             quoted_url = re.sub(r'/photo/\d+$', '', quoted_url)
             quoted_url = re.sub(r'/video/\d+$', '', quoted_url)
             quoted_url = quote(quoted_url)
-            embed_url = f'https://publish.x.com/oembed?url={quoted_url}&omit_script=true'
+            oembed_url = f'https://publish.x.com/oembed?url={quoted_url}&omit_script=true'
             timeout = self.registryValue('timeout', msg.channel, irc.network)
             headers = conf.defaultHttpHeaders(irc.network, msg.channel)
 
-            with get(embed_url, timeout=timeout, headers=headers) as response:
+            with get(oembed_url, timeout=timeout, headers=headers) as response:
                 text = response.text
 
             response = loads(text)
@@ -279,31 +280,15 @@ class Smurf(callbacks.Plugin):
             self.log.error(_('Smurf :: URL <%s> :: %s: %s'), url, type(e).__name__, str(e))
             raise SmurfException(parsed_url.netloc, str(e)) from e
 
-    def getTitleYouTube(self, irc, msg, url, parsed_url):
-        # Idea came after `getTitleTwitter` as YouTube also has oEmbed
+    def getTitleOEmbed(self, irc, msg, url, parsed_url):
+        # Common OEmbed handler
         try:
-            embed_url = f'https://www.youtube.com/oembed?url={url}&format=json'
+            oembed_template = self.oembed[parsed_url.netloc]
+            oembed_url = oembed_template.format(url=url)
             timeout = self.registryValue('timeout', msg.channel, irc.network)
             headers = conf.defaultHttpHeaders(irc.network, msg.channel)
 
-            with get(embed_url, timeout=timeout, headers=headers) as response:
-                text = response.text
-
-            response = loads(text)
-
-            return response['title']
-        except Exception as e:
-            self.log.error(_('Smurf :: URL <%s> :: %s: %s'), url, type(e).__name__, str(e))
-            raise SmurfException(parsed_url.netloc, str(e)) from e
-
-    def getTitleReddit(self, irc, msg, url, parsed_url):
-        # Reddit supports OEmbed as well
-        try:
-            embed_url = f'https://www.reddit.com/oembed?url={url}'
-            timeout = self.registryValue('timeout', msg.channel, irc.network)
-            headers = conf.defaultHttpHeaders(irc.network, msg.channel)
-
-            with get(embed_url, timeout=timeout, headers=headers) as response:
+            with get(oembed_url, timeout=timeout, headers=headers) as response:
                 text = response.text
 
             response = loads(text)
@@ -319,6 +304,9 @@ class Smurf(callbacks.Plugin):
 
         if parsed_url.netloc in self.handlers:
             return self.handlers[parsed_url.netloc](irc, msg, url, parsed_url)
+
+        if parsed_url.netloc in self.oembed:
+            return self.getTitleOEmbed(irc, msg, url, parsed_url)
 
         return self.getTitleDefault(irc, msg, url, parsed_url)
 
