@@ -74,6 +74,10 @@ class Smurf(callbacks.Plugin):
         self.handlers['youtu.be']        = self.getTitleYouTube
         self.handlers['www.youtu.be']    = self.getTitleYouTube
 
+        self.handlers['reddit.com']     = self.getTitleReddit
+        self.handlers['www.reddit.com'] = self.getTitleReddit
+        self.handlers['new.reddit.com'] = self.getTitleReddit
+
     @wrap([
         'url',
     ])
@@ -279,6 +283,23 @@ class Smurf(callbacks.Plugin):
         # Idea came after `getTitleTwitter` as YouTube also has oEmbed
         try:
             embed_url = f'https://www.youtube.com/oembed?url={url}&format=json'
+            timeout = self.registryValue('timeout', msg.channel, irc.network)
+            headers = conf.defaultHttpHeaders(irc.network, msg.channel)
+
+            with get(embed_url, timeout=timeout, headers=headers) as response:
+                text = response.text
+
+            response = loads(text)
+
+            return response['title']
+        except Exception as e:
+            self.log.error(_('Smurf :: URL <%s> :: %s: %s'), url, type(e).__name__, str(e))
+            raise SmurfException(parsed_url.netloc, str(e)) from e
+
+    def getTitleReddit(self, irc, msg, url, parsed_url):
+        # Reddit supports OEmbed as well
+        try:
+            embed_url = f'https://www.reddit.com/oembed?url={url}'
             timeout = self.registryValue('timeout', msg.channel, irc.network)
             headers = conf.defaultHttpHeaders(irc.network, msg.channel)
 
