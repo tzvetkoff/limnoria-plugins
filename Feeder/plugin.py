@@ -208,22 +208,6 @@ class Feeder(callbacks.Plugin):
             return {}
 
     def save_history(self, history):
-        feeds = self.registryValue('feeds')
-
-        for network in history:
-            irc = world.getIrc(network)
-
-            if not irc:
-                del history[network]
-            else:
-                for channel in history[network]:
-                    if not channel in irc.state.channels:
-                        del history[network][channel]
-                    else:
-                        for feed in history[network][channel]:
-                            if not feeds[feed]:
-                                del history[network][channel][feed]
-
         for network in history:
             limit = self.registryValue('history', network=network)
 
@@ -609,6 +593,40 @@ class Feeder(callbacks.Plugin):
         class announce(announces):
             def listCommands(self, pluginCommands=...):
                 return []
+
+        class history(callbacks.Commands):
+            @wrap([
+                'admin'
+            ])
+            def sanitize(self, irc, _msg, _args):
+                '''no arguments
+
+                Sanitizes the history file'''
+
+                plugin = irc.getCallback('Feeder')
+                feeds = plugin.registryValue('feeds')
+                history = plugin.load_history()
+
+                for network in list(history.keys()):
+                    netirc = world.getIrc(network)
+
+                    if not netirc:
+                        self.log.info('Deleting network %s from history', network)
+                        del history[network]
+                    else:
+                        for channel in list(history[network].keys()):
+                            if not channel in netirc.state.channels:
+                                self.log.info('Deleting channel %s/%s from history', network, channel)
+                                del history[network][channel]
+                            else:
+                                for feed in list(history[network][channel].keys()):
+                                    if not feed in feeds:
+                                        self.log.info('Deleting feed %s/%s/%s from history', network, channel, feed)
+                                        del history[network][channel][feed]
+
+                plugin.save_history(history)
+
+                irc.replySuccess()
 
 
 Class = Feeder
