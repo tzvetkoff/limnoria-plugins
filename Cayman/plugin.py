@@ -56,17 +56,23 @@ class Cayman(callbacks.Plugin):
 
     def _gif(self, channel, network):
         timeout = self.registryValue('timeout', channel, network)
-        with requests.get('https://edgecats.net/random', timeout=timeout) as response:
+        endpoint = self.registryValue('gifApiEndpoint', channel, network)
+        with requests.get(endpoint, timeout=timeout) as response:
             return response.text.replace('http://', 'https://')
 
     def _fact(self, channel, network):
         timeout = self.registryValue('timeout', channel, network)
-        with requests.get('https://catfact.ninja/fact', timeout=timeout) as response:
-            data = json.loads(response.text)
-            return data['fact']
+        endpoint = self.registryValue('factApiEndpoint', channel, network)
+        with requests.get(endpoint, timeout=timeout) as response:
+            try:
+                data = json.loads(response.text)
+                return data['fact']
+            except json.decoder.JSONDecodeError:
+                return response.text
 
     def _match(self, message, channel, network):
-        words = [word.strip() for word in self.registryValue('triggerWords', channel, network)]
+        words = [word.strip() for word in self.registryValue(
+            'triggerWords', channel, network)]
         pattern = re.compile(r'\b(' + '|'.join(words) + r')\b', re.IGNORECASE)
         return pattern.search(message)
 
@@ -75,7 +81,8 @@ class Cayman(callbacks.Plugin):
         '''Gets a random cat gif'''
         irc.reply(
             self._gif(msg.channel, irc.network),
-            prefixNick=self.registryValue('prefixNick', msg.channel, irc.network)
+            prefixNick=self.registryValue(
+                'prefixNick', msg.channel, irc.network)
         )
 
     @wrap
@@ -83,7 +90,8 @@ class Cayman(callbacks.Plugin):
         '''Gets a random cat fact'''
         irc.reply(
             self._fact(msg.channel, irc.network),
-            prefixNick=self.registryValue('prefixNick', msg.channel, irc.network)
+            prefixNick=self.registryValue(
+                'prefixNick', msg.channel, irc.network)
         )
 
     def doPrivmsg(self, irc, msg):
@@ -103,18 +111,21 @@ class Cayman(callbacks.Plugin):
         self.last_message_timestamp = now
 
         if last_message_timestamp:
-            seconds_since_last_message = (now - last_message_timestamp).total_seconds()
+            seconds_since_last_message = (
+                now - last_message_timestamp).total_seconds()
             if seconds_since_last_message < self.registryValue('throttle', msg.channel, irc.network):
                 self.log.info('Cayman :: Throttled')
                 return
 
-        link_chance = self.registryValue('linkChance', msg.channel, irc.network)
-        fact_chance = self.registryValue('factChance', msg.channel, irc.network)
+        gif_chance = self.registryValue(
+            'gifChance', msg.channel, irc.network)
+        fact_chance = self.registryValue(
+            'factChance', msg.channel, irc.network)
 
-        link_rand = random.randrange(1, 101) <= link_chance
+        gif_rand = random.randrange(1, 101) <= gif_chance
         fact_rand = random.randrange(1, 101) <= fact_chance
 
-        if link_rand:
+        if gif_rand:
             irc.reply(self._gif(msg.channel, irc.network), prefixNick=False)
         elif fact_rand:
             irc.reply(self._fact(msg.channel, irc.network), prefixNick=False)

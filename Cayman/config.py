@@ -63,13 +63,23 @@ conf.registerChannelValue(
 )
 conf.registerChannelValue(
     Cayman,
-    'linkChance',
+    'gifChance',
     registry.Integer(67, _('0-100 chance to trigger a link to a cat gif')),
+)
+conf.registerChannelValue(
+    Cayman,
+    'gifApiEndpoint',
+    registry.String('https://edgecats.net/random', _('Gif API endpoint')),
 )
 conf.registerChannelValue(
     Cayman,
     'factChance',
     registry.Integer(33, _('0-100 chance to trigger a cat fact')),
+)
+conf.registerChannelValue(
+    Cayman,
+    'factApiEndpoint',
+    registry.String('https://catfact.ninja/fact', 'Fact API endpoint'),
 )
 conf.registerChannelValue(
     Cayman,
