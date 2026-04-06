@@ -38,6 +38,7 @@
 # pylint:disable=bare-except
 # pylint:disable=invalid-name
 # pylint:disable=broad-exception-caught
+# pylint:disable=dangerous-default-value
 
 
 import json
@@ -269,6 +270,12 @@ class Feeder(callbacks.Plugin):
             irc.replySuccess()
 
         class feeds(callbacks.Commands):
+            def listCommands(self, pluginCommands=[]):  # pyright: ignore[reportCallInDefaultInitializer]
+                cmds = super().listCommands(pluginCommands)
+                cmds.remove('ls')
+
+                return cmds
+
             @wrap([
                 'admin',
             ])
@@ -284,6 +291,14 @@ class Feeder(callbacks.Plugin):
                     irc.reply(', '.join(feeds.keys()))
                 else:
                     irc.reply(_('No feeds configured.'))
+
+            @wrap
+            def ls(self, irc, _msg, _args):
+                '''no arguments
+
+                Alias of `list`'''
+
+                self.list(irc, _msg, _args)
 
             @wrap([
                 'admin',
@@ -328,7 +343,6 @@ class Feeder(callbacks.Plugin):
                             'url': url,
                         }
                         irc.replySuccess()
-
 
             @wrap([
                 'admin',
@@ -435,6 +449,12 @@ class Feeder(callbacks.Plugin):
                 return []
 
         class announces(callbacks.Commands):
+            def listCommands(self, pluginCommands=[]):  # pyright: ignore[reportCallInDefaultInitializer]
+                cmds = super().listCommands(pluginCommands)
+                cmds.remove('ls')
+
+                return cmds
+
             @wrap([
                 'admin',
             ])
@@ -450,6 +470,14 @@ class Feeder(callbacks.Plugin):
                     irc.reply(json.dumps(announces, separators=(',', ':')))
                 else:
                     irc.reply(_('No announces configured.'))
+
+            @wrap
+            def ls(self, irc, _msg, _args):
+                '''no arguments
+
+                Alias of `list`'''
+
+                self.list(irc, _msg, _args)
 
             @wrap([
                 'admin',
