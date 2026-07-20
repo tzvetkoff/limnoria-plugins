@@ -159,7 +159,7 @@ class Feeder(callbacks.Plugin):
             for irc in world.ircs:
                 limit = self.registryValue('lastN', network=irc.network)
                 if 'limit' in feeds[feed]:
-                    limit = feeds[feed]['limit']
+                    limit = max(limit, feeds[feed]['limit'])
 
                 last_n = entries[0:limit]
                 last_n.reverse()
