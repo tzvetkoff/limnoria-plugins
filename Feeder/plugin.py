@@ -158,6 +158,9 @@ class Feeder(callbacks.Plugin):
 
             for irc in world.ircs:
                 limit = self.registryValue('lastN', network=irc.network)
+                if 'limit' in feeds[feed]:
+                    limit = feeds[feed]['limit']
+
                 last_n = entries[0:limit]
                 last_n.reverse()
 
@@ -374,9 +377,9 @@ class Feeder(callbacks.Plugin):
             def set(self, irc, _msg, _args, name, key, value):
                 '''<name> <key> <value>
 
-                Sets a feed metadata field. One of: title, format, timeout, ignore, url, user_agent'''
+                Sets a feed metadata field. One of: title, format, timeout, ignore, limit, url, user_agent'''
 
-                if key not in ['title', 'format', 'timeout', 'ignore', 'url', 'user_agent']:
+                if key not in ['title', 'format', 'timeout', 'ignore', 'limit', 'url', 'user_agent']:
                     msg = _('Metadata {key} not allowed.').format_map({
                         'key': key,
                     })
@@ -396,6 +399,12 @@ class Feeder(callbacks.Plugin):
                         value = float(value)
                     except ValueError:
                         irc.reply(_('Invalid float.'))
+                        return
+                elif key == 'limit':
+                    try:
+                        value = int(value)
+                    except ValueError:
+                        irc.reply(_('Invalid integer.'))
                         return
 
                 with plugin.registryValue('feeds', value=False).editable() as feeds:

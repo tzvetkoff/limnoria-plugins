@@ -47,13 +47,13 @@ class FeederTestCase(ChannelPluginTestCase):
     def test001CommandFeedsAdd(self):
         self.assertRegexp('feeder feeds add kernel https://www.kernel.org/feeds/kdist.xml',
                           r'The operation succeeded')
-        self.assertRegexp('feeder feeds add awesome https://github.com/awesomeWM/awesome/releases.rss',
+        self.assertRegexp('feeder feeds add awesome https://github.com/awesomeWM/awesome/releases.atom',
                           r'The operation succeeded')
         self.assertRegexp('feeder feeds add kernel https://www.kernel.org/feeds/kdist.xml',
                           r'Feed kernel already exists')
         self.assertEqual(conf.supybot.plugins.feeder.feeds(), {
             'kernel': {'url': 'https://www.kernel.org/feeds/kdist.xml'},
-            'awesome': {'url': 'https://github.com/awesomeWM/awesome/releases.rss'},
+            'awesome': {'url': 'https://github.com/awesomeWM/awesome/releases.atom'},
         })
 
     def test002CommandFeedsList(self):
