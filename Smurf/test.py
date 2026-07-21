@@ -90,20 +90,19 @@ class SmurfTestCase(ChannelPluginTestCase):
         )
 
     @unittest.skipUnless(network, 'smurf tests require networking')
-    def testSmurf005YouTube(self):
+    def testSmurf005YouTubeNormal(self):
+        self.assertSnarfResponse(
+            'https://www.youtube.com/watch?v=cJygmsFYf9w',
+            '>> Patlamaya Devam - Isyan Tetick - 1 Hour Alien Video - with english lyrics - ИНОПЛАНЕТЯНИН (at www.youtube.com)',
+        )
+
+    @unittest.skipUnless(network, 'smurf tests require networking')
+    def testSmurf006YouTubeUnauthorized(self):
         try:
             self.timeout = 1
             self.assertSnarfNoResponse('https://www.youtube.com/watch?v=pUbodYODWlA')
         finally:
             self.timeout = 5
-
-    @unittest.skipUnless(network, 'smurf tests require networking')
-    def testSmurf006YouTube(self):
-
-        self.assertSnarfResponse(
-            'https://www.youtube.com/watch?v=cJygmsFYf9w',
-            '>> Patlamaya Devam - Isyan Tetick - 1 Hour Alien Video - with english lyrics - ИНОПЛАНЕТЯНИН (at www.youtube.com)',
-        )
 
     @unittest.skipUnless(network, 'smurf tests require networking')
     def testSmurf007Reddit(self):

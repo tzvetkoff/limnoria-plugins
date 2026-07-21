@@ -345,7 +345,7 @@ class Smurf(callbacks.Plugin):
             headers = conf.defaultHttpHeaders(irc.network, msg.channel)
 
             text = self.getUrl(oembed_url, timeout=timeout, headers=headers)
-            if text == 'Unauthorized':
+            if text == 'Unauthorized':  # YouTube
                 return None
 
             response = loads(text)
