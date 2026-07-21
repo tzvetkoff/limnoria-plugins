@@ -157,15 +157,16 @@ class Feeder(callbacks.Plugin):
                     pass
 
             for irc in world.ircs:
-                limit = self.registryValue('lastN', network=irc.network)
+                history_limit = self.registryValue('history', network=irc.network)
+                entries_limit = min(history_limit, self.registryValue('lastN', network=irc.network))
                 if 'limit' in feeds[feed]:
-                    limit = max(limit, feeds[feed]['limit'])
+                    entries_limit = min(entries_limit, feeds[feed]['limit'])
 
-                last_n = entries[0:limit]
-                last_n.reverse()
+                last_entries = entries[0:entries_limit]
+                last_entries.reverse()
 
                 for channel in self.registryValue('announces', network=irc.network):
-                    for entry in last_n:
+                    for entry in last_entries:
                         if 'summary' in entry:
                             del entry['summary']
                         if 'content' in entry:
