@@ -40,7 +40,10 @@ from time import time
 from json import loads
 from html.entities import entitydefs
 from urllib.parse import urlparse, urlunparse, quote
-from requests import get
+from requests.adapters import HTTPAdapter
+from requests.sessions import Session
+from urllib3 import Retry as BaseRetry
+from urllib3.exceptions import ProtocolError
 from bs4 import BeautifulSoup
 
 from supybot import conf, utils, ircmsgs, callbacks
@@ -52,6 +55,35 @@ try:
 except ImportError:
     def _(x):
         return x
+
+
+class Retry(BaseRetry):
+    def __init__(self, *args, **kwargs):
+        self.url = kwargs['url']
+        self.logger = kwargs['logger']
+        del kwargs['url'], kwargs['logger']
+
+        super().__init__(*args, **kwargs)
+
+    def _is_connection_error(self, err):
+        if isinstance(err, (ProtocolError)):
+            return True
+
+        return super()._is_connection_error(err)
+
+    def new(self, **kwargs):
+        kwargs['url'] = self.url
+        kwargs['logger'] = self.logger
+
+        return super().new(**kwargs)
+
+    def increment(self, *args, **kwargs):
+        new_retry = super().increment(*args, **kwargs)
+
+        e = kwargs['error']
+        self.logger.warning('Smurf :: Will retry fetching %s :: %s: %s', self.url, str(type(e)), e)
+
+        return new_retry
 
 
 class Smurf(callbacks.Plugin):
@@ -162,6 +194,58 @@ class Smurf(callbacks.Plugin):
             if not smurf_multiple_urls:
                 break
 
+    def getUrl(self, url, timeout, headers, max_size=None, parsed_url=None):
+        if not parsed_url:
+            parsed_url = urlparse(url)
+
+        try:
+            sess = Session()
+            retries = Retry(
+                connect=5,
+                read=5,
+                redirect=5,
+                status=5,
+                other=5,
+                backoff_factor=1.0,
+                url=url,
+                logger=self.log,
+            )
+            sess.mount('https://', HTTPAdapter(max_retries=retries))
+            sess.mount('http://', HTTPAdapter(max_retries=retries))
+
+            t = time()
+            size = 0
+            text = b''
+
+            if max_size:
+                with sess.get(url, timeout=timeout, headers=headers, stream=True) as response:
+                    for chunk in response.iter_content(max_size):
+                        size += len(chunk)
+                        text += chunk
+
+                        if size >= max_size:
+                            break
+                        if time() - t > timeout:
+                            self.log.error(_('Smurf :: URL <%s> :: Timeout'), url)
+                            raise SmurfException(parsed_url.netloc, _('Timeout'))
+            else:
+                with sess.get(url, timeout=timeout, headers=headers) as response:
+                    text = response.text
+
+            if isinstance(text, bytes):
+                try:
+                    text = text.decode(self.getEncoding(text) or 'utf8', 'replace')
+                except UnicodeDecodeError as e:
+                    self.log.error(_('Smurf :: URL <%s> :: Cannot determine encoding'), url)
+                    raise SmurfException(parsed_url.netloc, _('Cannot determine encoding')) from e
+        except SmurfException:
+            raise
+        except Exception as e:
+            self.log.error(_('Smurf :: URL <%s> :: %s: %s'), url, type(e).__name__, str(e))
+            raise SmurfException(parsed_url.netloc, str(e)) from e
+
+        return text
+
     def getEncoding(self, text):
         try:
             match = re.search(utils.web._charset_re, text, re.MULTILINE)    # pylint:disable=protected-access
@@ -179,7 +263,7 @@ class Smurf(callbacks.Plugin):
         except Exception:
             return None
 
-    def getTitleDefault(self, irc, msg, url, parsed_url): # pylint:disable=too-many-locals,too-many-statements
+    def getTitleDefault(self, irc, msg, url, parsed_url):  # pylint:disable=too-many-locals,too-many-statements
         # Some things stolen from:
         #   https://github.com/progval/Limnoria/blob/master/plugins/Web/plugin.py
         #   https://github.com/impredicative/urltitle/blob/master/urltitle/config/overrides.py
@@ -195,33 +279,7 @@ class Smurf(callbacks.Plugin):
         elif parsed_url.netloc in ('c0re.pfoo.org'):
             headers['User-agent'] = 'Googlebot-News'
 
-        try:
-            t = time()
-            size = 0
-            text = b''
-
-            with get(url, timeout=timeout, headers=headers, stream=True) as response:
-                for chunk in response.iter_content(max_size):
-                    size += len(chunk)
-                    text += chunk
-
-                    if size >= max_size:
-                        break
-                    if time() - t > timeout:
-                        self.log.error(_('Smurf :: URL <%s> :: Timeout'), url)
-                        raise SmurfException(parsed_url.netloc, _('Timeout'))
-
-            try:
-                text = text.decode(self.getEncoding(text) or 'utf8', 'replace')
-            except UnicodeDecodeError as e:
-                self.log.error(_('Smurf :: URL <%s> :: Cannot determine encoding'), url)
-                raise SmurfException(parsed_url.netloc, _('Cannot determine encoding')) from e
-        except SmurfException:
-            raise
-        except Exception as e:
-            self.log.error(_('Smurf :: URL <%s> :: %s: %s'), url, type(e).__name__, str(e))
-            raise SmurfException(parsed_url.netloc, str(e)) from e
-
+        text = self.getUrl(url, timeout=timeout, headers=headers, max_size=max_size, parsed_url=parsed_url)
         parser = SmurfParser(parsed_url.netloc)
         try:
             parser.feed(text)
@@ -249,9 +307,7 @@ class Smurf(callbacks.Plugin):
             timeout = self.registryValue('timeout', msg.channel, irc.network)
             headers = conf.defaultHttpHeaders(irc.network, msg.channel)
 
-            with get(oembed_url, timeout=timeout, headers=headers) as response:
-                text = response.text
-
+            text = self.getUrl(oembed_url, timeout=timeout, headers=headers)
             response = loads(text)
 
             if 'error' in response:
@@ -288,8 +344,9 @@ class Smurf(callbacks.Plugin):
             timeout = self.registryValue('timeout', msg.channel, irc.network)
             headers = conf.defaultHttpHeaders(irc.network, msg.channel)
 
-            with get(oembed_url, timeout=timeout, headers=headers) as response:
-                text = response.text
+            text = self.getUrl(oembed_url, timeout=timeout, headers=headers)
+            if text == 'Unauthorized':
+                return None
 
             response = loads(text)
 
@@ -298,7 +355,7 @@ class Smurf(callbacks.Plugin):
             self.log.error(_('Smurf :: URL <%s> :: %s: %s'), url, type(e).__name__, str(e))
             raise SmurfException(parsed_url.netloc, str(e)) from e
 
-    def getTitle(self, irc, msg, url, parsed_url = None):
+    def getTitle(self, irc, msg, url, parsed_url=None):
         if not parsed_url:
             parsed_url = urlparse(url)
 

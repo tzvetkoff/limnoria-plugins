@@ -91,13 +91,22 @@ class SmurfTestCase(ChannelPluginTestCase):
 
     @unittest.skipUnless(network, 'smurf tests require networking')
     def testSmurf005YouTube(self):
+        try:
+            self.timeout = 1
+            self.assertSnarfNoResponse('https://www.youtube.com/watch?v=pUbodYODWlA')
+        finally:
+            self.timeout = 5
+
+    @unittest.skipUnless(network, 'smurf tests require networking')
+    def testSmurf006YouTube(self):
+
         self.assertSnarfResponse(
             'https://www.youtube.com/watch?v=cJygmsFYf9w',
             '>> Patlamaya Devam - Isyan Tetick - 1 Hour Alien Video - with english lyrics - ИНОПЛАНЕТЯНИН (at www.youtube.com)',
         )
 
     @unittest.skipUnless(network, 'smurf tests require networking')
-    def testSmurf006Reddit(self):
+    def testSmurf007Reddit(self):
         self.assertSnarfResponse(
             'https://www.reddit.com/r/theydidthemath/comments/1rkeuup/the_cost_of_breaking_traffic_rules_in_norway_vs/',
             '>> The cost of breaking traffic rules in Norway vs in India [Offsite] (at www.reddit.com)',
