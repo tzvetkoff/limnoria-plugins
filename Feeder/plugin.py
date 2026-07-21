@@ -47,10 +47,10 @@ import re
 
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
+from feedparser import parse as parse_feed, USER_AGENT as DEFAULT_USER_AGENT
 from requests.adapters import HTTPAdapter
 from requests.sessions import Session
-from feedparser import parse as parse_feed, USER_AGENT as DEFAULT_USER_AGENT
-from urllib3 import Retry
+from urllib3 import Retry as BaseRetry
 from urllib3.exceptions import ProtocolError
 
 from supybot import callbacks, conf, ircmsgs, world
@@ -66,7 +66,7 @@ except ImportError:
 HistoryFilename = conf.supybot.directories.data.dirize('Feeder.flat')
 
 
-class LoggableRetry(Retry):
+class Retry(BaseRetry):
     def __init__(self, *args, **kwargs):
         self.feed = kwargs['feed']
         self.logger = kwargs['logger']
@@ -119,12 +119,16 @@ class Feeder(callbacks.Plugin):
                     timeout = feeds[feed]['timeout']
 
                 headers = conf.defaultHttpHeaders(None, None)
-                headers['User-Agent'] = DEFAULT_USER_AGENT
+
+                headers['User-agent'] = DEFAULT_USER_AGENT
                 if 'user_agent' in feeds[feed]:
-                    headers['User-Agent'] = feeds[feed]['user_agent']
+                    headers['User-agent'] = feeds[feed]['user_agent']
+
+                if 'accept_language' in feeds[feed]:
+                    headers['Accept-Language'] = feeds[feed]['accept_language']
 
                 sess = Session()
-                retries = LoggableRetry(
+                retries = Retry(
                     connect=5,
                     read=5,
                     redirect=5,
@@ -378,9 +382,9 @@ class Feeder(callbacks.Plugin):
             def set(self, irc, _msg, _args, name, key, value):
                 '''<name> <key> <value>
 
-                Sets a feed metadata field. One of: title, format, timeout, ignore, limit, url, user_agent'''
+                Sets a feed metadata field. One of: title, format, timeout, ignore, limit, url, user_agent, accept_language'''
 
-                if key not in ['title', 'format', 'timeout', 'ignore', 'limit', 'url', 'user_agent']:
+                if key not in ['title', 'format', 'timeout', 'ignore', 'limit', 'url', 'user_agent', 'accept_language']:
                     msg = _('Metadata {key} not allowed.').format_map({
                         'key': key,
                     })
