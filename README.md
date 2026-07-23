@@ -12,6 +12,7 @@ Miscellaneous plugins for Limnoria.
 | CertWatch     | Sends notifications about expiring certificates                                                      |
 | EMSC          | Sends near-realtime notifications about earthquakes in a configured area, data from https://emsc.eu/ |
 | Feeder        | RSS/Atom feed scanner                                                                                |
+| Fuelo         | Fetches gasoline/diesel prices                                                                       |
 | Funk          | A collection of useless fun commands                                                                 |
 | NIGGG         | Sends notifications about earthquakes around Bulgaria, data from https://ndc.niggg.bas.bg/           |
 | RateSX        | Fetches crypto currency rates from https://rate.sx/                                                  |
