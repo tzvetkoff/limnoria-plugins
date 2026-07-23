@@ -35,6 +35,7 @@
 # pylint:disable=redefined-builtin
 
 import unittest
+from supybot import conf
 from supybot.test import *
 
 

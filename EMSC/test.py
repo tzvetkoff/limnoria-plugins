@@ -34,6 +34,7 @@
 # pylint:disable=unused-wildcard-import
 # pylint:disable=redefined-builtin
 
+import unittest
 from supybot.test import *
 
 

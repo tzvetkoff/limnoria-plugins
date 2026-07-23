@@ -35,6 +35,8 @@
 # pylint:disable=redefined-builtin
 # pylint:disable=line-too-long
 
+import unittest
+from supybot import conf
 from supybot.test import *
 
 
