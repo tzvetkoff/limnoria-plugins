@@ -345,9 +345,6 @@ class Smurf(callbacks.Plugin):
             headers = conf.defaultHttpHeaders(irc.network, msg.channel)
 
             text = self.getUrl(oembed_url, timeout=timeout, headers=headers)
-            if text == 'Unauthorized':  # YouTube
-                return None
-
             response = loads(text)
 
             return response['title']
@@ -360,10 +357,20 @@ class Smurf(callbacks.Plugin):
             parsed_url = urlparse(url)
 
         if parsed_url.netloc in self.handlers:
-            return self.handlers[parsed_url.netloc](irc, msg, url, parsed_url)
+            try:
+                title = self.handlers[parsed_url.netloc](irc, msg, url, parsed_url)
+                if title:
+                    return title
+            except:
+                pass
 
         if parsed_url.netloc in self.oembed:
-            return self.getTitleOEmbed(irc, msg, url, parsed_url)
+            try:
+                title = self.getTitleOEmbed(irc, msg, url, parsed_url)
+                if title:
+                    return title
+            except:
+                pass
 
         return self.getTitleDefault(irc, msg, url, parsed_url)
 
