@@ -77,8 +77,7 @@ class SearchNotFoundError(Exception):
 
 
 class Sedster(callbacks.PluginRegexp):
-    '''
-    Enable Sedster on the desired channels:
+    '''Enable Sedster on the desired channels:
     `config channel #yourchannel plugins.sedster.enable True`
     After enabling Sedster, typing a regex in the form
     `s/text/replacement/` will make the bot announce replacements.
@@ -96,8 +95,7 @@ class Sedster(callbacks.PluginRegexp):
 
     - `i`: case insensitive replacement
     - `g`: replace all occurences of the original text
-    - `NUMBER`: replace the nth occurence, e.g. `s/foo/bar/2` will replace only the 2nd
-    '''
+    - `NUMBER`: replace the nth occurence, e.g. `s/foo/bar/2` will replace only the 2nd'''
 
     threaded = True
 

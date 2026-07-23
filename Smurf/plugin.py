@@ -117,8 +117,7 @@ class Smurf(callbacks.Plugin):
     def smurf(self, irc, msg, _args, url):
         '''<url>
 
-        Fetch title from URL
-        '''
+        Fetch title from URL'''
 
         report_errors = self.registryValue('reportErrors', msg.channel, irc.network)
 

@@ -60,14 +60,16 @@ class Funk(callbacks.Plugin):
 
     @wrap
     def bofh(self, irc, msg, _args):
-        '''BOFH (Bastard Operator From Hell) excuse generator
-        '''
+        '''no arguments
+
+        BOFH (Bastard Operator From Hell) excuse generator'''
         irc.reply(self._randline('bofh.txt'), prefixNick=self.registryValue('prefixNick', msg.channel, irc.network))
 
     @wrap
     def chuck(self, irc, msg, _args):
-        '''Tells a Chuck Norris joke
-        '''
+        '''no arguments
+
+        Tells a Chuck Norris joke'''
         irc.reply(self._randline('chuck.txt'), prefixNick=self.registryValue('prefixNick', msg.channel, irc.network))
 
     @wrap([
@@ -75,8 +77,8 @@ class Funk(callbacks.Plugin):
     ])
     def rot13(self, irc, msg, _args, text):
         '''<text>
-        Encode text with ROT13
-        '''
+
+        Encode text with ROT13'''
         irc.reply(codecs.encode(text, 'rot_13'), prefixNick=self.registryValue('prefixNick', msg.channel, irc.network))
 
     @wrap([
@@ -84,8 +86,8 @@ class Funk(callbacks.Plugin):
     ])
     def unrot13(self, irc, msg, _args, text):
         '''<text>
-        Decode ROT13 text
-        '''
+
+        Decode ROT13 text'''
         irc.reply(codecs.decode(text, 'rot_13'), prefixNick=self.registryValue('prefixNick', msg.channel, irc.network))
 
     def _pigword(self, word):
@@ -141,8 +143,8 @@ class Funk(callbacks.Plugin):
     ])
     def pig(self, irc, msg, _args, text):
         '''<text>
-        Convert text from English to Pig Latin.
-        '''
+
+        Convert text from English to Pig Latin.'''
         words = re.split(r'\s+', text)
         words = [self._pigword(word) for word in words]
         irc.reply(' '.join(words), prefixNick=self.registryValue('prefixNick', msg.channel, irc.network))
@@ -152,8 +154,8 @@ class Funk(callbacks.Plugin):
     ])
     def unpig(self, irc, msg, _args, text):
         '''<text>
-        Convert text from Pig Latin to English.
-        '''
+
+        Convert text from Pig Latin to English.'''
         words = re.split(r'\s+', text)
         words = [self._unpigword(word) for word in words]
         irc.reply(' '.join(words), prefixNick=self.registryValue('prefixNick', msg.channel, irc.network))
@@ -163,8 +165,8 @@ class Funk(callbacks.Plugin):
     ])
     def roman(self, irc, msg, _args, text):
         '''<text>
-        Convert from/to Roman numerals.
-        '''
+
+        Convert from/to Roman numerals.'''
         if re.match(r'^\d+$', text):
             number = int(text)
             if number < 1 or number > 3999:

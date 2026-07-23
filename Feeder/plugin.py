@@ -473,7 +473,7 @@ class Feeder(callbacks.Plugin):
                 'admin',
             ])
             def list(self, irc, _msg, _args):
-                '''No arguments
+                '''no arguments
 
                 Lists configured announces.'''
 

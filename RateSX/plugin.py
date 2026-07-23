@@ -58,8 +58,7 @@ class RateSX(callbacks.Plugin):
     def rate(self, irc, msg, _args, count, currency, _, target):
         '''[count] <currency> [to [target currency]]
 
-        Fetches crypto currency's price from https://rate.sx/
-        '''
+        Fetches crypto currency's price from https://rate.sx/'''
         if count is None:
             count = 1.0
         if target is None:
