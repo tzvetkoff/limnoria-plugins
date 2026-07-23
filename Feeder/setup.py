@@ -33,7 +33,7 @@ from supybot.setup import plugin_setup
 
 plugin_setup(
     'Feeder',
-    install_requires=['APScheduler', 'feedparser'],
+    install_requires=['APScheduler', 'feedparser', 'requests'],
 )
 
 # vim:ft=python:ts=4:sts=4:sw=4:et:tw=119
